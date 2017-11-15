@@ -49,13 +49,11 @@ i_FITC = find(CM,FITC_channel);
 %warning('Substituting a different RCP set');
 %PeakMEFLs = [791	2083	6562	16531	47575	136680	271771];
 
-PeakMEFLs = get_bead_peaks(CM.bead_model,CM.bead_channel,CM.bead_batch);
-if(numel(PeakMEFLs>7))
-    PeakMEFLs = PeakMEFLs((end-6):end);
-else if(PeakMEFLs<7)
-        error('Cannot use beads with less than 7 peaks');
-    end
-end
+[PeakMEFLs,units,actualBatch] = get_bead_peaks(CM.bead_model,CM.bead_channel,CM.bead_batch);
+
+totalNumPeaks = numel(PeakMEFLs);
+numQuantifiedPeaks = sum(~isnan(PeakMEFLs));
+quantifiedPeakMEFLs = PeakMEFLs((end-numQuantifiedPeaks+1):end);
 
 % identify peaks
 bin_increment = 0.02;
@@ -189,12 +187,12 @@ for i=1:numel(CM.Channels),
 end
 
 % look for the best linear fit of log10(peak_means) vs. log10(PeakMEFLs)
-if(n_peaks>7)
+if(n_peaks>numQuantifiedPeaks)
     warning('Bead calibration found unexpectedly many bead peaks: truncating to use top peaks only');
-    n_peaks = 7;
-    segment_peak_means = segment_peak_means((end-6):end);
-    peak_means = peak_means((end-6):end);
-    peak_counts = peak_counts((end-6):end);
+    n_peaks = numQuantifiedPeaks;
+    segment_peak_means = segment_peak_means((end-numQuantifiedPeaks+1):end);
+    peak_means = peak_means((end-numQuantifiedPeaks+1):end);
+    peak_counts = peak_counts((end-numQuantifiedPeaks+1):end);
 end
 
 % Use log scale for fitting to avoid distortions from highest point
@@ -203,32 +201,32 @@ if(n_peaks>=2)
     first_peak = 0;
     if(n_peaks>2)
         best_i = -1;
-        for i=0:(7-n_peaks),
-          [poly,S] = polyfit(log10(peak_means),log10(PeakMEFLs((1:n_peaks)+i)),1);
+        for i=0:(numQuantifiedPeaks-n_peaks),
+          [poly,S] = polyfit(log10(peak_means),log10(quantifiedPeakMEFLs((1:n_peaks)+i)),1);
           if S.normr <= fit_error, fit_error = S.normr; model = poly; first_peak=i+2; best_i = i; end;
         end
         % Warn if setting to anything less than the top peak, since top peak should usually be visible
-        fprintf('Bead peaks identified as %i to %i of 8\n',first_peak,first_peak+n_peaks-1);
-        if best_i < (7-n_peaks) && n_peaks < 5,
+        fprintf('Bead peaks identified as %i to %i of %i\n',first_peak,first_peak+n_peaks-1,totalNumPeaks);
+        if best_i < (numQuantifiedPeaks-n_peaks) && n_peaks < 5,
             warning('TASBE:Beads','Few bead peaks and fit does not include highest: error likely');
         end
     else % 2 peaks
         warning('TASBE:Beads','Only two bead peaks found, assuming brightest two');
-        [poly,S] = polyfit(log10(peak_means),log10(PeakMEFLs(6:7)),1);
-        fit_error = S.normr; model = poly; first_peak = numel(PeakMEFLs)-1+1; % 7 vs 8 kludge
+        [poly,S] = polyfit(log10(peak_means),log10(quantifiedPeakMEFLs(end-1:end)),1);
+        fit_error = S.normr; model = poly; first_peak = numQuantifiedPeaks;
     end
     if ~isempty(force_peak), first_peak = force_peak; end
-    constrained_fit = mean(log10(PeakMEFLs((1:n_peaks)+first_peak-2)) - log10(peak_means));
-    cf_error = mean(10.^abs(log10((PeakMEFLs((1:n_peaks)+first_peak-2)./peak_means) / 10.^constrained_fit)));
+    constrained_fit = mean(log10(quantifiedPeakMEFLs((1:n_peaks)+first_peak-2)) - log10(peak_means));
+    cf_error = mean(10.^abs(log10((quantifiedPeakMEFLs((1:n_peaks)+first_peak-2)./peak_means) / 10.^constrained_fit)));
     % Final fit_error should be close to zero / 1-fold
     if(cf_error>1.05), warning('TASBE:Beads','Bead calibration may be incorrect: fit more than 5 percent off: error = %.2d',cf_error); end;
     %if(abs(model(1)-1)>0.05), warning('TASBE:Beads','Bead calibration probably incorrect: fit more than 5 percent off: slope = %.2d',model(1)); end;
     k_MEFL = 10^constrained_fit;
 elseif(n_peaks==1) % 1 peak
     warning('TASBE:Beads','Only one bead peak found, assuming brightest');
-    fit_error = 0; first_peak = numel(PeakMEFLs)+1; % 7 vs. 8 kludge
+    fit_error = 0; first_peak = totalNumPeaks;
     if ~isempty(force_peak), first_peak = force_peak; end
-    k_MEFL = PeakMEFLs(first_peak-1)/peak_means; % 7 vs. 8 kludge
+    k_MEFL = PeakMEFLs(first_peak)/peak_means;
 else % n_peaks = 0
     warning('Bead calibration failed: found no bead peaks; using single dummy peak');
     k_MEFL = 1;
@@ -271,12 +269,11 @@ end
 if makePlots>1
     h = figure('PaperPosition',[1 1 5 3.66]);
     set(h,'visible','off');
-    % TODO: Should be first_peak-1, but we currently assum 7 PeakMEFLs for an 8-peak file
-    loglog(peak_means,PeakMEFLs((1:n_peaks)+first_peak-2),'b*-'); hold on;
+    loglog(peak_means,quantifiedPeakMEFLs((1:n_peaks)+first_peak-2),'b*-'); hold on;
     %loglog([1 peak_means],[1 peak_means]*(10.^model(2)),'r+--');
     loglog([1 peak_means],[1 peak_means]*k_MEFL,'go--');
     for i=1:n_peaks
-        text(peak_means(i),PeakMEFLs(i+first_peak-2)*1.3,sprintf('%i',i+first_peak-1));
+        text(peak_means(i),quantifiedPeakMEFLs(i+first_peak-2)*1.3,sprintf('%i',i+first_peak-1));
     end
     xlabel([CM.bead_channel ' a.u.']); ylabel('Beads MEFLs');
     title(sprintf('Peak identification for %s beads', CM.bead_model));

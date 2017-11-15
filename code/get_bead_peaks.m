@@ -129,5 +129,13 @@ function channelEntry = parseChannel(entries,currentLine)
     if isempty(peaks)
         error('Line %i: bead peak specification must contain at least one peak.',currentLine);
     end
+    
+    % Code added to make sure Octave doesn't throw away the empty peak
+    % cells.
+    cellPeaks = {row{4+(1:lastPeak)}};
+    empties = cellfun('isempty', cellPeaks);
+    cellPeaks(empties) = {NaN};
+    peaks = cell2mat(cellPeaks);
+    
     channelEntry = {name, units, peaks};
 end
