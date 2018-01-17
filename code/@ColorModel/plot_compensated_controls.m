@@ -26,7 +26,7 @@ for driven=1:n
             continue; 
         end;
         pmin = percentile(data(pos,passive),0.1); pmax = percentile(data(pos,passive),99.9);
-        smoothhist2D([log10(data(pos,driven)) data(pos,passive)],10,[200, 200],[],'image',[0 pmin; 6 pmax]); hold on;
+        smoothhist2D([log10(data(pos,driven)) data(pos,passive)],10,[200, 200],[],[],[0 pmin; 6 pmax]); hold on;
         %
         sorted = sortrows(data(pos,:),driven);
         for i=1:10, % passive means of deciles

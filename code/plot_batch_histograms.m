@@ -7,6 +7,9 @@
 % package distribution's top directory.
 
 function plot_batch_histograms(results,sampleresults,outputsettings,linespecs,CM)
+% Elements of linespecs can either be LineSpecs, or ColorSpecs (e.g. three-element
+% 0..1 vectors representing RGB color values); currently, only single-letter 
+% color linespecs are properly handled.
 
 n_conditions = numel(sampleresults);
 n_colors = numel(linespecs);
@@ -24,15 +27,26 @@ for i=1:n_conditions
         counts = replicates{j}.BinCounts;
         bin_centers = results{i}.bincenters;
         for k=1:n_colors
-            loglog(bin_centers,counts(:,k),linespecs{k}); hold on;
+            ls = linespecs{k};
+            if(ischar(ls) && length(ls)==1 && length(findstr(ls, 'rgbcmykw')) == 1)
+                loglog(bin_centers,counts(:,k),ls); hold on;
+            else
+                loglog(bin_centers,counts(:,k),'Color', ls); hold on;
+            end
         end
         maxcount = max(maxcount,max(max(counts)));
     end
     for j=1:numReplicates,
         for k=1:n_colors
-            loglog([results{i}.means(k) results{i}.means(k)],[1 maxcount],[linespecs{k} '--']); hold on;
+            ls = linespecs{k};
+            if(ischar(ls) && length(ls)==1 && length(findstr(ls, 'rgbcmykw')) == 1)
+                loglog([results{i}.means(k) results{i}.means(k)],[1 maxcount],[ls '--']); hold on;
+            else
+                loglog([results{i}.means(k) results{i}.means(k)],[1 maxcount], 'Color', ls, 'LineStyle', '--'); hold on;
+            end
         end
     end
+    
     xlabel(getStandardUnits(CM)); ylabel('Count');
     ylim([1e0 10.^(ceil(log10(maxcount)))]);
     if(outputsettings.FixedInputAxis), xlim(outputsettings.FixedInputAxis); end;

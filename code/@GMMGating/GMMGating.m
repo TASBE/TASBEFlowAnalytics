@@ -12,6 +12,7 @@ GMMG.selected_components = [];
 GMMG.channel_names = {};
 GMMG.distribution = {};
 GMMG.deviations = [];
+GMMG.fraction_kept = 0.0; % will report the fraction of data that weren't filtered out'
 
 % gate function just runs autogate_filter on model
 GMMG = class(GMMG,'GMMGating',Filter());
@@ -55,7 +56,9 @@ channel_data = zeros(sum(which),n_channels);
 for i=1:n_channels, 
     channel_data(:,i) = unfiltered_channel_data{i}(which);
 end;
-fprintf('Gating autodetect using %.2f%% valid and non-saturated data\n',100*sum(which)/numel(which));
+frac_kept = sum(which)/numel(which);
+fprintf('Gating autodetect using %.2f%% valid and non-saturated data\n',100*frac_kept);
+GMMG.fraction_kept = frac_kept;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Find and adjust gaussian fit

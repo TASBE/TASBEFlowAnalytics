@@ -67,7 +67,7 @@ if CM.compensation_plot
     h = figure('PaperPosition',[1 1 6 4]);
     set(h,'visible','off');
     pos = no_AF_data(:,driven)>1 & no_AF_data(:,passive)>1;
-    smoothhist2D(log10([no_AF_data(pos,driven) no_AF_data(pos,passive)]),10,[200, 200],[],'image',[flowMin flowMin; flowMax flowMax]); hold on;
+    smoothhist2D(log10([no_AF_data(pos,driven) no_AF_data(pos,passive)]),10,[200, 200],[], [],[flowMin flowMin; flowMax flowMax]); hold on;
     which = means(:,driven)>=lower_threshold;
     plot(log10(means(which,driven)),log10(means(which,passive)),'k*-');
     plot(log10(means(which,driven)),log10(means(which,passive).*stds(which,passive)),'k:');

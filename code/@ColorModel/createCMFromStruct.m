@@ -20,11 +20,23 @@
 % second parameter is actually a structure.
 function CM = createCMFromStruct( CM, myStruct )
     for fn = fieldnames(myStruct)'
+        fieldName = correctedFieldName(fn{1});
         try
-            CM.(fn{1}) = myStruct.(fn{1});
+            CM.(fieldName) = myStruct.(fn{1});
         catch
             warning('Could not copy field %s', fn{1});
         end
     end
 
+end
+
+% This function replaces FITC in fieldnames with ERF.
+% The ColorModel class had FITC before the first underscore.
+% This function makes that assumption.
+function fieldName = correctedFieldName(fn)
+    splitNames = strsplit(fn, '_');
+    if strcmp(char(splitNames{1}), 'FITC')
+        splitNames{1} = 'ERF';
+    end
+    fieldName = strjoin(splitNames, '_');  
 end

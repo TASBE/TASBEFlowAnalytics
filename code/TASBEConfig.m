@@ -16,10 +16,12 @@ classdef TASBEConfig
             s.testing.fakeFigureSaves = 0;
             
             % Matlab GMdistribution
+            
             % Generic flow data analysis
             s.flow.rangeMin = 0;                           % bin minimum (log10 scale)
             s.flow.rangeMax = 7;                           % bin maximum (log10 scale)
-
+            s.flow.outputPointCloud = false;               % if true, output pointcloud for each calibrated read
+            s.flow.pointCloudPath = 'CSV/';                % location for pointcloud outputs
 
             % generic plots
             s.plotPath = 'plots/';          % where should any plot go?
@@ -27,6 +29,7 @@ classdef TASBEConfig
             s.graphPlotSize = [6 4];        % What size (in inches) should data graph figures be?
             s.heatmapPlotSize = [5 5];      % What size (in inches) should scatter/heatmap figures be?
             s.largeOutliers = false;        % Should outliers in heatmap figures be large, for output in small figures?
+            s.heatmapPlotType = 'image';    % Should contour plots be used instead of heatmap images?
             
             % supporting plots, i.e., those supporting the transformation of raw data into processed data, like autofluorescence, compensation, units
             s.supporting = struct();

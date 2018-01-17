@@ -25,7 +25,11 @@ for i=1:n_conditions
     for j = 1:numberOfPerInducerFiles
         fileName = perInducerFiles{j};
         % Read data and extract statistics
-        data = readfcs_compensated_ERF(colorModel,fileName, getUseAutoFluorescence(analysisParams), true);
+        if TASBEConfig.get('flow.outputPointCloud')
+            data = fcsToCsvFlowConverterFileWriter(colorModel,fileName, getUseAutoFluorescence(analysisParams), true);
+        else
+            data = readfcs_compensated_ERF(colorModel, fileName, getUseAutoFluorescence(analysisParams), true);
+        end
         
         sampleresults{i}{j} = compute_sample_statistics(colorModel,experiment,fileName,analysisParams,data);
     end

@@ -48,7 +48,7 @@ function plot_translation_graph(CM,data,i,j,settings,scale,means,stds,which)
     %plot(means(which,i),means(which,j),'g*-');
     %plot([1e0 1e6],scale*[1e0 1e6],'r-');
     pos = data(:,i)>1 & data(:,j)>1;
-    smoothhist2D(log10([data(pos,i) data(pos,j)]),10,[200, 200],[],'image',[0 0; 6 6]); hold on;
+    smoothhist2D(log10([data(pos,i) data(pos,j)]),10,[200, 200],[],[],[0 0; 6 6]); hold on;
     plot(log10(means(which,i)),log10(means(which,j)),'k*-');
     plot(log10(means(which,i)./stds(which,i)),log10(means(which,j).*stds(which,j)),'k:');
     plot(log10(means(which,i).*stds(which,i)),log10(means(which,j)./stds(which,j)),'k:');

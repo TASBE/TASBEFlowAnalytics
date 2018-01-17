@@ -17,4 +17,5 @@ function [LU L U] = geo_error_bars(val,err)
 
 U = val.*(err-1);
 L = val.*(1-(1./err));
+U(err<1) = NaN; L(err<1) = NaN; % wipe points that don't fit the assumption
 LU = [L;U];

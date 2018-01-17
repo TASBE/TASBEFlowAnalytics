@@ -43,14 +43,19 @@ if nargin == 0
      [FileName, FilePath] = uigetfile('*.*','Select fcs2.0 file');
      filename = [FilePath,FileName];
      if FileName == 0;
-          fcsdat = []; fcshdr = [];
+          fcsdat = []; fcshdr = []; fcsdatscaled = [];
           return;
      end
 else
+    if isempty(filename)
+        warning('FCS:Read','No file provided! Returning empty dataset.'); 
+        fcsdat = []; fcshdr = []; fcsdatscaled = [];
+        return;
+    end
     filecheck = dir(filename);
     if size(filecheck,1) == 0
-        warning('FCS:Read',[filename,': The file does not exist!']); 
-        fcsdat = []; fcshdr = [];
+        warning('FCS:Read',[filename,': The file does not exist! Returning empty dataset.']); 
+        fcsdat = []; fcshdr = []; fcsdatscaled = [];
         return;
     end
 end
