@@ -40,12 +40,12 @@ for i=1:step:n_bins
     loglog(input_mean(i,which),output_mean(i,which)./output_std(i,which),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
 %if(TASBEConfig.get('OutputSettings.FixedAxis')), axis([1e2 1e10 1e2 1e10]); end;
-xlabel(['IFP ' in_units]); ylabel(['OFP ' out_units]);
+xlabel(['IFP ' clean_for_latex(in_units)]); ylabel(['OFP ' clean_for_latex(out_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title(['Raw ',stemName,' transfer curve, colored by constitutive bin']);
-outputfig(h,[stemName,'-',deviceName,'-mean'],directory);
+title(['Raw ',clean_for_latex(stemName),' transfer curve, colored by constitutive bin']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-mean'],directory);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plasmid system is disabled, due to uncertainty about correctness
@@ -65,7 +65,7 @@ outputfig(h,[stemName,'-',deviceName,'-mean'],directory);
 % end;
 % %if(TASBEConfig.get('OutputSettings.FixedAxis')), axis([1e2 1e10 1e2 1e10]); end;
 % set(gca,'XScale','log'); set(gca,'YScale','log');
-% xlabel(['IFP ' in_units]); ylabel(['OFP ' out_units '/plasmid']);
+% xlabel(['IFP ' clean_for_latex(in_units)]); ylabel(['OFP ' clean_for_latex(out_units) '/plasmid']);
 % if(TASBEConfig.get('OutputSettings.FixedNormalizedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedNormalizedInputAxis')); end;
 % if(TASBEConfig.get('OutputSettings.FixedNormalizedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedNormalizedOutputAxis')); end;
 % title(['Normalized ',TASBEConfig.get('OutputSettings.DeviceName'),' transfer curve, colored by plasmid count']);

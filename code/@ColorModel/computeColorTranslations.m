@@ -54,11 +54,11 @@ function plot_translation_graph(CM,data,i,j,scale,means,stds,which)
     plot(log10(means(which,i).*stds(which,i)),log10(means(which,j)./stds(which,j)),'k:');
     plot([0 6],log10(scale)+[0 6],'r-');
     xlim([0 6]); ylim([0 6]);
-    xlabel(sprintf('%s a.u.',getName(CM.Channels{i})));
-    ylabel(sprintf('%s a.u.',getName(CM.Channels{j})));
+    xlabel(sprintf('%s a.u.',clean_for_latex(getName(CM.Channels{i}))));
+    ylabel(sprintf('%s a.u.',clean_for_latex(getName(CM.Channels{j}))));
     title('Color Translation Model');
     path = TASBEConfig.get('plots.plotPath');
-    outputfig(h,sprintf('color-translation-%s-to-%s', getPrintName(CM.Channels{i}),getPrintName(CM.Channels{j})), path);
+    outputfig(h,sprintf('color-translation-%s-to-%s', clean_for_latex(getPrintName(CM.Channels{i})),clean_for_latex(getPrintName(CM.Channels{j}))), path);
 end
 
 function [scale CM] = compute_translation_scale(CM,data,i,j,ctrl)
@@ -93,15 +93,15 @@ function [scale CM] = compute_translation_scale(CM,data,i,j,ctrl)
 %         figure('PaperPosition',[1 1 6 4]);
 %         loglog(data(:,ctrl),data(:,i),'b.','MarkerSize',1); hold on;
 %         plot(means(which,ctrl),means(which,i),'g*-');
-%         xlabel(sprintf('%s a.u.',CM.Channels{ctrl}.Filter));
-%         ylabel(sprintf('%s a.u.',CM.Channels{i}.Filter));
+%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
+%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{i}.Filter)));
 %         title('Color Translation Model');
 % 
 %         figure('PaperPosition',[1 1 6 4]);
 %         loglog(data(:,ctrl),data(:,j),'b.','MarkerSize',1); hold on;
 %         plot(means(which,ctrl),means(which,j),'g*-');
-%         xlabel(sprintf('%s a.u.',CM.Channels{ctrl}.Filter));
-%         ylabel(sprintf('%s a.u.',CM.Channels{j}.Filter));
+%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
+%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{j}.Filter)));
 %         title('Color Translation Model');
     end
 end
@@ -143,15 +143,15 @@ function [scale CM] = compute_two_color_translation_scale(CM,data,i,j)
 %         figure('PaperPosition',[1 1 6 4]);
 %         loglog(data(:,ctrl),data(:,i),'b.','MarkerSize',1); hold on;
 %         plot(means(which,ctrl),means(which,i),'g*-');
-%         xlabel(sprintf('%s a.u.',CM.Channels{ctrl}.Filter));
-%         ylabel(sprintf('%s a.u.',CM.Channels{i}.Filter));
+%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
+%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{i}.Filter)));
 %         title('Color Translation Model');
 % 
 %         figure('PaperPosition',[1 1 6 4]);
 %         loglog(data(:,ctrl),data(:,j),'b.','MarkerSize',1); hold on;
 %         plot(means(which,ctrl),means(which,j),'g*-');
-%         xlabel(sprintf('%s a.u.',CM.Channels{ctrl}.Filter));
-%         ylabel(sprintf('%s a.u.',CM.Channels{j}.Filter));
+%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
+%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{j}.Filter)));
 %         title('Color Translation Model');
     end
 end

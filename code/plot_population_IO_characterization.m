@@ -35,11 +35,11 @@ for i=1:n_components
     loglog(10.^input_mean(i,:),10.^(output_mean(i,:)-output_std(i,:)),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
 %if(TASBEConfig.get('OutputSettings.FixedAxis')), axis([1e2 1e10 1e2 1e10]); end;
-xlabel(['IFP ' in_units]); ylabel(['OFP ' out_units]);
+xlabel(['IFP ' clean_for_latex(in_units)]); ylabel(['OFP ' clean_for_latex(out_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title(['Population ',stemName,' transfer curve, colored by Gaussian component']);
-outputfig(h,[stemName,'-',deviceName,'-pop-mean'],directory);
+title(['Population ',clean_for_latex(stemName),' transfer curve, colored by Gaussian component']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-pop-mean'],directory);
 
 end

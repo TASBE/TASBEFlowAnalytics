@@ -7,7 +7,7 @@
 % package distribution's top directory.
 
 function statisticsFile = writeStatisticsCsv(channels, sampleIds, sampleresults, units)
-    baseName = sanitize_name(TASBEConfig.get('OutputSettings.StemName'));
+    baseName = sanitize_filename(TASBEConfig.get('OutputSettings.StemName'));
 
     % First create the default output filename.
     statisticsFile = [baseName '_statisticsFile.csv'];
@@ -104,12 +104,10 @@ function fileHeader = buildDefaultStatsFileHeader(channels, units)
     
     % Not elegant, but it gets the job done.
     for i=1:numChannels
-        channelName = [getPrintName(channels{i}) '_' units];
-        invalidChars = '-|\s';  % Matlab does not like hypens or whitespace in variable names.
-        matlabValidVariableNameChannelName = regexprep(channelName,invalidChars,'_');
-        binNames{i} = ['BinCount_' matlabValidVariableNameChannelName];
-        meanNames{i} = ['GeoMean_' matlabValidVariableNameChannelName];
-        stdDevNames{i} = ['GeoStdDev_' matlabValidVariableNameChannelName];
+        channelName = sanitizeColumnName([getPrintName(channels{i}) '_' units]);
+        binNames{i} = ['BinCount_' channelName];
+        meanNames{i} = ['GeoMean_' channelName];
+        stdDevNames{i} = ['GeoStdDev_' channelName];
     end
     
     % Don't separate with commas. We want all the column names in a cell

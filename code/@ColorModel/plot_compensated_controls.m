@@ -37,10 +37,12 @@ for driven=1:n
             plot(log10(drange),[pmean pmean],'k*-');
         end
         
-        xlabel(sprintf('%s (%s a.u.)',getPrintName(CM.Channels{driven}),getName(CM.Channels{driven})));
-        ylabel(sprintf('%s (%s a.u.)',getPrintName(CM.Channels{passive}),getName(CM.Channels{passive})));
+        cleanedDrivenPrintName = clean_for_latex(getPrintName(CM.Channels{driven}));
+        cleanedPassivePrintName = clean_for_latex(getPrintName(CM.Channels{passive}));
+        xlabel(sprintf('%s (%s a.u.)',cleanedDrivenPrintName,clean_for_latex(getName(CM.Channels{driven}))));
+        ylabel(sprintf('%s (%s a.u.)',cleanedPassivePrintName,clean_for_latex(getName(CM.Channels{passive}))));
         title('Compensated Positive Control');
         path = TASBEConfig.get('compensation.plotPath');
-        outputfig(h, sprintf('compensated-%s-vs-positive-%s',getPrintName(CM.Channels{passive}),getPrintName(CM.Channels{driven})), path);
+        outputfig(h, sprintf('compensated-%s-vs-positive-%s',cleanedPassivePrintName,cleanedDrivenPrintName), path);
     end
 end

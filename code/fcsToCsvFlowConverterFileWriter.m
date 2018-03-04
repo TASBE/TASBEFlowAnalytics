@@ -21,7 +21,7 @@ function data = fcsToCsvFlowConverterFileWriter(CM, filename, with_AF, floor)
         mkdir(path);
     end
     
-    csvName = [path '/' sanitize_name(name) '_PointCloud.csv'];
+    csvName = [path '/' sanitize_filename(name) '_PointCloud.csv'];
     
     % sanitize the channel names
     channels = getChannels(CM);
@@ -29,8 +29,7 @@ function data = fcsToCsvFlowConverterFileWriter(CM, filename, with_AF, floor)
 
     for i=1:numel(channels)
         channelName = [getPrintName(channels{i}) '_' getStandardUnits(CM)];
-        invalidChars = '-|\s';  % Matlab does not like hypens or whitespace in variable names.
-        sanitizedChannelName{i} = regexprep(channelName,invalidChars,'_');
+        sanitizedChannelName{i} = sanitizeColumnName(channelName);
     end
 
     % Use the channel names as the column labels

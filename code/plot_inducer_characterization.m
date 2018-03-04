@@ -45,12 +45,12 @@ for i=1:step:n_bins
     loglog(inducer_levels(which),input_mean(i,which).*input_std(i,which),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(inducer_levels(which),input_mean(i,which)./input_std(i,which),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['[',InducerName,']']); ylabel(['IFP ' in_units]);
+xlabel(['[',clean_for_latex(InducerName),']']); ylabel(['IFP ' clean_for_latex(in_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
 if(TASBEConfig.isSet('OutputSettings.FixedInducerAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInducerAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
-title(['Raw ',deviceName,' transfer curve, colored by constitutive bin (non-equivalent colors)']);
-outputfig(h,[stemName,'-',deviceName,'-mean'],directory);
+title(['Raw ',clean_for_latex(deviceName),' transfer curve, colored by constitutive bin (non-equivalent colors)']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-mean'],directory);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plasmid system is disabled, due to uncertainty about correctness
@@ -68,7 +68,7 @@ outputfig(h,[stemName,'-',deviceName,'-mean'],directory);
 %     loglog(inducer_levels(which),input_mean(i,which)./pe(i,which).*input_std(i,which),':','Color',hsv2rgb([hues(i) 1 0.9]));
 %     loglog(inducer_levels(which),input_mean(i,which)./pe(i,which)./input_std(i,which),':','Color',hsv2rgb([hues(i) 1 0.9]));
 % end;
-% xlabel(['[',InducerName,']']); ylabel(['IFP ' in_units '/plasmid']);
+% xlabel(['[',clean_for_latex(InducerName),']']); ylabel(['IFP ' clean_for_latex(in_units) '/plasmid']);
 % set(gca,'XScale','log'); set(gca,'YScale','log');
 % if(TASBEConfig.get('OutputSettings.FixedInducerAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInducerAxis')); end;
 % if(TASBEConfig.get('OutputSettings.FixedNormalizedInputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedNormalizedInputAxis')); end;

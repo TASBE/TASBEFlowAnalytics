@@ -73,9 +73,11 @@ if CM.compensation_plot
     plot(log10(means(which,driven)),log10(means(which,passive).*stds(which,passive)),'k:');
     plot(log10(means(which,driven)),log10(means(which,passive)./stds(which,passive)),'k:');
     plot([0 6],log10(b)+[0 6],'r-');
-    xlabel(sprintf('%s (%s a.u.)',getPrintName(CM.Channels{driven}),getName(CM.Channels{driven})));
-    ylabel(sprintf('%s (%s a.u.)',getPrintName(CM.Channels{passive}),getName(CM.Channels{passive})));
+    cleanedChannelsDriven = clean_for_latex(getPrintName(CM.Channels{driven}));
+    cleanedChannelsPassive = clean_for_latex(getPrintName(CM.Channels{passive}));
+    xlabel(sprintf('%s (%s a.u.)',cleanedChannelsDriven,clean_for_latex(getName(CM.Channels{driven}))));
+    ylabel(sprintf('%s (%s a.u.)',cleanedChannelsPassive,clean_for_latex(getName(CM.Channels{passive}))));
     title('Color Compensation Model');
     path = TASBEConfig.get('compensation.plotPath');
-    outputfig(h, sprintf('color-compensation-%s-for-%s',getPrintName(CM.Channels{passive}),getPrintName(CM.Channels{driven})), path);
+    outputfig(h, sprintf('color-compensation-%s-for-%s',cleanedChannelsPassive,cleanedChannelsDriven), path);
 end

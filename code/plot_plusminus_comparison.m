@@ -65,13 +65,13 @@ for i=1:step:n_var
     loglog(pm_results.InMeans(which,i,2),pm_results.OutMeans(which,i,2).*pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(pm_results.InMeans(which,i,2),pm_results.OutMeans(which,i,2)./pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['IFP ' in_units]); ylabel(['OFP ' out_units]);
+xlabel(['IFP ' clean_for_latex(in_units)]); ylabel(['OFP ' clean_for_latex(out_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
 legend(legendentries,'Location','Best');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title(['Raw ',stemName,' transfer curves']);
-outputfig(h,[stemName,'-',deviceName,'-mean'],directory);
+title(['Raw ',clean_for_latex(stemName),' transfer curves']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-mean'],directory);
 
 
 % normalized I/O plot
@@ -89,13 +89,13 @@ for i=1:step:n_var
     loglog(pm_results.InMeans(which,i,2),pm_results.OutMeans(which,i,2)./bin_centers(which)'.*pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(pm_results.InMeans(which,i,2),pm_results.OutMeans(which,i,2)./bin_centers(which)'./pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['IFP ' in_units]); ylabel(['OFP ' out_units ' / CFP ' cfp_units]);
+xlabel(['IFP ' clean_for_latex(in_units)]); ylabel(['OFP ' clean_for_latex(out_units) ' / CFP ' clean_for_latex(cfp_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
-legend(legendentries,'Location','Best');
+legend(clean_for_latex(legendentries),'Location','Best');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title([stemName,' transfer curves normalized by CFP']);
-outputfig(h,[stemName,'-',deviceName,'-mean-norm'],directory);
+title([clean_for_latex(stemName),' transfer curves normalized by CFP']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-mean-norm'],directory);
 
 % IFP vs. CFP
 h = figure('PaperPosition',[1 1 5 3.66]);
@@ -112,13 +112,13 @@ for i=1:step:n_var
     loglog(bin_centers(which),pm_results.InMeans(which,i,2).*pm_results.InStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(bin_centers(which),pm_results.InMeans(which,i,2)./pm_results.InStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['CFP ' cfp_units]); ylabel(['IFP ' out_units]);
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel(['IFP ' clean_for_latex(out_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
-legend({pmlegendentries{:} 'Minus'},'Location','Best');
+legend(clean_for_latex({pmlegendentries{:} 'Minus'}),'Location','Best');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title([stemName,' IFP vs. CFP']);
-outputfig(h,[stemName,'-',deviceName,'-input-v-cfp'],directory);
+title([clean_for_latex(stemName),' IFP vs. CFP']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-input-v-cfp'],directory);
 
 
 % OFP vs. CFP
@@ -136,13 +136,13 @@ for i=1:step:n_var
     loglog(bin_centers(which),pm_results.OutMeans(which,i,2).*pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(bin_centers(which),pm_results.OutMeans(which,i,2)./pm_results.OutStandardDevs(which,i,2),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['CFP ' cfp_units]); ylabel(['OFP ' out_units]);
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel(['OFP ' clean_for_latex(out_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
-legend({pmlegendentries{:} 'Minus'},'Location','Best');
+legend(clean_for_latex({pmlegendentries{:} 'Minus'}),'Location','Best');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title([stemName,' OFP vs. CFP']);
-outputfig(h,[stemName,'-',deviceName,'-v-cfp'],directory);
+title([clean_for_latex(stemName),' OFP vs. CFP']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-v-cfp'],directory);
 
 % % Relative change in OFP vs. CFP
 % Removed because it wasn't ever useful
@@ -182,13 +182,13 @@ for i=1:step:n_var
     which = pm_results.Valid(:,i,1) & pm_results.Valid(:,i,2);
     semilogx(bin_centers(which),pm_results.Ratios(which,i),'-','Color',hsv2rgb([hues(i) 1 0.9])); hold on;
 end;
-xlabel(['CFP ' cfp_units]); ylabel('Fold Activation');
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel('Fold Activation');
 set(gca,'XScale','log'); set(gca,'YScale','log');
-legend(legendentries,'Location','Best');
+legend(clean_for_latex(legendentries),'Location','Best');
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedOutputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedOutputAxis')); end;
-title(['+/- Ratios for ',stemName]);
-outputfig(h,[stemName,'-',deviceName,'-ratios'],directory);
+title(['+/- Ratios for ',clean_for_latex(stemName)]);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-ratios'],directory);
 
 % SNR plots
 if n_var == 1, 
@@ -205,11 +205,11 @@ for i=1:step:n_var
     which = pm_results.Valid(:,i,1) & pm_results.Valid(:,i,2);
     loglog(bin_centers(which),pm_results.InputSNR(which,i),[ntick '--'],'Color',hsv2rgb([hues(i) 1 0.9])); hold on;
 end;
-xlabel(['CFP ' cfp_units]); ylabel('SNR (db)');
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel('SNR (db)');
 set(gca,'XScale','log');
-legend({pmlegendentries{:} 'Input SNR'},'Location','Best');
-title([stemName,' SNR vs. CFP']);
-outputfig(h,[stemName,'-',deviceName,'-SNR'],directory);
+legend(clean_for_latex({pmlegendentries{:} 'Input SNR'}),'Location','Best');
+title([clean_for_latex(stemName),' SNR vs. CFP']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-SNR'],directory);
 
 if n_var == 1, 
     pmlegendentries{1} = '\Delta SNR';
@@ -221,8 +221,8 @@ for i=1:step:n_var
     which = pm_results.Valid(:,i,1) & pm_results.Valid(:,i,2);
     semilogx(bin_centers(which),pm_results.OutputSNR(which,i)-pm_results.InputSNR(which,i),[ptick '-'],'Color',hsv2rgb([hues(i) 1 0.9])); hold on;
 end;
-xlabel(['CFP ' cfp_units]); ylabel('\Delta SNR (db)');
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel('\Delta SNR (db)');
 set(gca,'XScale','log');
-legend(pmlegendentries,'Location','Best');
-title([stemName,'\Delta SNR vs. CFP']);
-outputfig(h,[stemName,'-',deviceName,'-dSNR'],directory);
+legend(clean_for_latex(pmlegendentries),'Location','Best');
+title([clean_for_latex(stemName),'\Delta SNR vs. CFP']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-dSNR'],directory);

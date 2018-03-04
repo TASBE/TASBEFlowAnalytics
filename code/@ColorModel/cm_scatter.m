@@ -40,11 +40,11 @@ else
     if (nargin >= 7 && ~isempty(range)), xlim(10.^range(:,1)); ylim(10.^(range(:,2))); end;
 end
 if ERF
-    xlabel(['log_{10} ' xcolor ' ' getUnits(xchan)]); ylabel(['log_{10} ' ycolor ' ' getUnits(ychan)]);
+    xlabel(['log_{10} ' xcolor ' ' clean_for_latex(getUnits(xchan))]); ylabel(['log_{10} ' ycolor ' ' clean_for_latex(getUnits(ychan))]);
 else
-    xlabel(['log_{10} ' xcolor ' a.u.']); ylabel(['log_{10} ' ycolor ' a.u.']);
+    xlabel(clean_for_latex(['log_{10} ' xcolor ' a.u.'])); ylabel(clean_for_latex(['log_{10} ' ycolor ' a.u.']));
 end
-title(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,filename));
+title(clean_for_latex(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,filename)));
 
 data = [xc yc];
 figh = h;

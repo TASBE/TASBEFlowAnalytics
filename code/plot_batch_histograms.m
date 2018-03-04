@@ -50,7 +50,7 @@ for i=1:n_conditions
         end
     end
     
-    xlabel(getStandardUnits(CM)); ylabel('Count');
+    xlabel(clean_for_latex(getStandardUnits(CM))); ylabel('Count');
     ylim([1e0 10.^(ceil(log10(maxcount)))]);
     if(TASBEConfig.get('OutputSettings.FixedInputAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
     %ylim([0 maxcount*1.1]);

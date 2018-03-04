@@ -25,7 +25,7 @@ if ~isdir(path),
     mkdir(path);
 end
 
-name = sanitize_name(name);
+name = sanitize_filename(name);
 %   Note: path must be added after sanitization, because path
 %   characters need to be removed in sanitization
 

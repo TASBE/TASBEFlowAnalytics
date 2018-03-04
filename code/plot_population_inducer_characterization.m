@@ -42,9 +42,9 @@ for i=1:n_components
     loglog(inducer_levels(:),10.^(input_mean(i,:)+input_std(i,:)),':','Color',hsv2rgb([hues(i) 1 0.9]));
     loglog(inducer_levels(:),10.^(input_mean(i,:)-input_std(i,:)),':','Color',hsv2rgb([hues(i) 1 0.9]));
 end;
-xlabel(['[',InducerName,']']); ylabel(['IFP ' in_units]);
+xlabel(['[',clean_for_latex(InducerName),']']); ylabel(['IFP ' clean_for_latex(in_units)]);
 set(gca,'XScale','log'); set(gca,'YScale','log');
 if(TASBEConfig.isSet('OutputSettings.FixedInducerAxis')), xlim(TASBEConfig.get('OutputSettings.FixedInducerAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedInputAxis')), ylim(TASBEConfig.get('OutputSettings.FixedInputAxis')); end;
-title(['Population ',deviceName,' transfer curve, colored by Gaussian component']);
-outputfig(h,[stemName,'-',deviceName,'-pop-mean'],directory);
+title(['Population ',clean_for_latex(deviceName),' transfer curve, colored by Gaussian component']);
+outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-pop-mean'],directory);

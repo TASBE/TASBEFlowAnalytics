@@ -42,8 +42,8 @@ else
     plot(xv,yv,'.','MarkerSize',1);
     if (nargin >= 5 && ~isempty(range)), xlim(range(:,1)); ylim(range(:,2)); end;
 end
-xlabel(['log_{10} ' xcolor ' a.u.']); ylabel(['log_{10} ' ycolor ' a.u.']);
-title(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,filename));
+xlabel(clean_for_latex(['log_{10} ' xcolor ' a.u.'])); ylabel(clean_for_latex(['log_{10} ' ycolor ' a.u.']));
+title(clean_for_latex(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,filename)));
 
 data = [xc yc];
 figh = h;

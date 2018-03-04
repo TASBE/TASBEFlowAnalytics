@@ -67,8 +67,8 @@ for i=1:n_colors
         maxcount = max(maxcount,max(counts));
     end
 end;
-xlabel(['Constitutive ' cfp_units]); ylabel('Count');
+xlabel(['Constitutive ' clean_for_latex(cfp_units)]); ylabel('Count');
 if(TASBEConfig.isSet('OutputSettings.FixedXAxis')), xlim(TASBEConfig.get('OutputSettings.FixedXAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedYAxis')), ylim(TASBEConfig.get('OutputSettings.FixedYAxis')); else ylim([1e0 10.^(ceil(log10(maxcount)))]); end;
-title([stemName,' bin counts, colored by inducer level']);
-outputfig(h,[stemName,'-histogram'],directory);
+title([clean_for_latex(stemName),' bin counts, colored by inducer level']);
+outputfig(h,[clean_for_latex(stemName),'-histogram'],directory);

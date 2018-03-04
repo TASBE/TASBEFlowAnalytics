@@ -195,9 +195,9 @@ for i=1:numel(CM.Channels),
         text(10.^(bin_min),graph_max/2,'peak search min value','Rotation',90,'FontSize',7,'VerticalAlignment','top','FontAngle','italic');
         plot(10.^[bin_max bin_max],[0 graph_max],'k:');
         text(10.^(bin_max),graph_max/2,'peak search max value','Rotation',90,'FontSize',7,'VerticalAlignment','bottom','FontAngle','italic');
-        xlabel(sprintf('a.u. for %s channel',getPrintName(CM.Channels{i}))); ylabel('Beads');
-        title(sprintf('Peak identification for %s for %s beads',getPrintName(CM.Channels{i}), beadModel));
-        outputfig(h, sprintf('bead-calibration-%s',getPrintName(CM.Channels{i})),plotPath);
+        xlabel(sprintf('a.u. for %s channel',clean_for_latex(getPrintName(CM.Channels{i})))); ylabel('Beads');
+        title(sprintf('Peak identification for %s for %s beads',clean_for_latex(getPrintName(CM.Channels{i})), beadModel));
+        outputfig(h, sprintf('bead-calibration-%s',clean_for_latex(getPrintName(CM.Channels{i}))),plotPath);
     end
 end
 
@@ -278,14 +278,14 @@ if makePlots
     text(10.^(bin_max),graph_max/2,'peak search max value','Rotation',90,'FontSize',7,'VerticalAlignment','bottom','FontAngle','italic');
     plot(10.^[0 range_max],[peak_threshold(i_ERF) peak_threshold(i_ERF)],'k:');
     text(1,peak_threshold(i_ERF),'clutter threshold','FontSize',7,'HorizontalAlignment','left','VerticalAlignment','bottom','FontAngle','italic');
-    title(sprintf('Peak identification for %s beads', beadModel));
+    title(sprintf('Peak identification for %s beads', clean_for_latex(beadModel)));
     xlim(10.^[0 range_max]);
     ylabel('Beads');
     if segment_secondary
-        xlabel([segmentName ' a.u.']); 
+        xlabel([clean_for_latex(segmentName) ' a.u.']); 
         outputfig(h,'bead-calibration-secondary',plotPath);
     else
-        xlabel([beadChannel ' a.u.']); 
+        xlabel([clean_for_latex(beadChannel) ' a.u.']); 
         outputfig(h,'bead-calibration',plotPath);
     end
 end
@@ -301,7 +301,7 @@ if makePlots
     for i=1:n_peaks
         text(peak_means(i),quantifiedPeakERFs(i+first_peak-1)*1.3,sprintf('%i',i+first_peak-1+peakOffset));
     end
-    xlabel([beadChannel ' a.u.']); ylabel('Beads ERFs');
+    xlabel(clean_for_latex([beadChannel ' a.u.'])); ylabel('Beads ERFs');
     title(sprintf('Peak identification for %s beads', beadModel));
     %legend('Location','NorthWest','Observed','Linear Fit','Constrained Fit');
     legend('Observed','Constrained Fit','Location','NorthWest');
@@ -325,7 +325,7 @@ if makePlots
             semilogy(peak_means(i),log10(segment_peak_means(i)),'k+');
             text(peak_means(i),log10(segment_peak_means(i))+0.1,sprintf('%i',i+first_peak-1+peakOffset));
         end
-        xlabel([beadChannel ' a.u.']); ylabel([segmentName ' a.u.']);
+        xlabel(clean_for_latex([beadChannel ' a.u.'])); ylabel(clean_for_latex([segmentName ' a.u.']));
         title(sprintf('Peak identification for %s beads', beadModel));
         outputfig(h,'bead-calibration',plotPath);
     end

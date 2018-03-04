@@ -82,11 +82,11 @@ for i=1:numel(CM.Channels)
         plot([1e3 1e9],[noisemeans(i) noisemeans(i)],'r-');
         plot([1e3 1e9],[noisemeans(i)+noisestds(i) noisemeans(i)+noisestds(i)],'r:');
         plot([1e3 1e9],[noisemeans(i)-noisestds(i) noisemeans(i)-noisestds(i)],'r:');
-        xlabel(sprintf('%s %s',getName(CM.Channels{i}),getUnits(CM.Channels{i})));
+        xlabel(sprintf('%s %s',clean_for_latex(getName(CM.Channels{i})),clean_for_latex(getUnits(CM.Channels{i}))));
         ylabel('k-fold noise');
-        title(sprintf('Noise Model for %s',getName(CM.Channels{i})));
+        title(sprintf('Noise Model for %s',clean_for_latex(getName(CM.Channels{i}))));
         path = TASBEConfig.get('plots.plotPath');
-        outputfig(h,sprintf('noise-model-%s',getPrintName(CM.Channels{i})),path);
+        outputfig(h,sprintf('noise-model-%s',clean_for_latex(getPrintName(CM.Channels{i}))),path);
     end
 end
 

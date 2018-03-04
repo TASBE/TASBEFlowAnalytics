@@ -42,11 +42,11 @@ for i=1:numel(CM.Channels)
                 plot([afmean afmean],[0 max(bin_counts)],'r-');
                 plot([afmean+2*afstd afmean+2*afstd],[0 max(bin_counts)],'r:');
                 plot([afmean-2*afstd afmean-2*afstd],[0 max(bin_counts)],'r:');
-                xlabel(sprintf('%s a.u.',name));
+                xlabel(sprintf('%s a.u.',clean_for_latex(name)));
                 ylabel('Count');
                 xlim([-100 maxbin]);
                 title('Autofluorescence Model');
-                outputfig(h, sprintf('autofluorescence-%s',getPrintName(CM.Channels{i})),path);
+                outputfig(h, sprintf('autofluorescence-%s',clean_for_latex(getPrintName(CM.Channels{i}))),path);
             end
             
             found = true; break;

@@ -28,8 +28,8 @@ before_install:
     # install Octave io package
     # Forge is unreliable: trying to get directly instead:
     # - octave --no-gui --quiet --eval "pkg install -forge io"
-    - wget -O io-2.4.10.tar.gz https://downloads.sourceforge.net/octave/io-2.4.10.tar.gz?download --no-check-certificate
-    - octave --no-gui --quiet --eval "pkg install io-2.4.10.tar.gz"
+    # - wget -O io-2.4.10.tar.gz https://downloads.sourceforge.net/octave/io-2.4.10.tar.gz?download --no-check-certificate
+    - octave --no-gui --quiet --eval "pkg install matlab_compat/io-2.4.10.tar.gz"
     # install MOxUnit
     - cd ..
     - rm -rf MOxUnit

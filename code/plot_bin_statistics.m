@@ -67,11 +67,11 @@ for i=1:n_inductions
         maxcount = max(maxcount,max(counts));
     end
 end;
-xlabel(['Constitutive ' cfp_units]); ylabel('Count');
+xlabel(['Constitutive ' clean_for_latex(cfp_units)]); ylabel('Count');
 if(TASBEConfig.isSet('OutputSettings.FixedXAxis')), xlim(TASBEConfig.get('OutputSettings.FixedXAxis')); end;
 if(TASBEConfig.isSet('OutputSettings.FixedYAxis')), ylim(TASBEConfig.get('OutputSettings.FixedYAxis')); else ylim([1e0 10.^(ceil(log10(maxcount)))]); end;
-title([stemName,' bin counts, colored by inducer level']);
-outputfig(h,[stemName,'-bincounts'],directory);
+title([clean_for_latex(stemName),' bin counts, colored by inducer level']);
+outputfig(h,[clean_for_latex(stemName),'-bincounts'],directory);
 
 % Fraction active per bin:
 h = figure('PaperPosition',[1 1 5 3.66]);
@@ -87,10 +87,10 @@ for i=1:n_inductions
         end
     end
 end;
-xlabel(['CFP ' cfp_units]); ylabel('Estimated Fraction Active');
+xlabel(['CFP ' clean_for_latex(cfp_units)]); ylabel('Estimated Fraction Active');
 ylim([-0.05 1.05]);
-title([stemName,' estimated fraction of cells active, colored by inducer level']);
-outputfig(h, [stemName,'-active'],directory);
+title([clean_for_latex(stemName),' estimated fraction of cells active, colored by inducer level']);
+outputfig(h, [clean_for_latex(stemName),'-active'],directory);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plasmid system is disabled, due to uncertainty about correctness
