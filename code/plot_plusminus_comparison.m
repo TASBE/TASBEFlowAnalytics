@@ -397,7 +397,7 @@ outputfig(h,[clean_for_latex(stemName),'-',clean_for_latex(deviceName),'-all-rat
 
 % SNR plots
 legendentries2 = legendentries;
-for i=1:n_var
+for i=1:numel(legendentries)
     legendentries2{i} = [legendentries{i} ' output SNR'];
 end
 legendentries2{end} = 'input SNR';

@@ -91,7 +91,7 @@ for k=1:n_batch
             % loglog(get_bin_centers(bins),counts,'-','Color',hsv2rgb([hues(i) 1 0.9])); hold on;
 
             %%% Gaussian Mixture model
-            if(~isempty(replicates{j}.PlasmidModel))
+            if(~isempty(replicates{j}.PlasmidModel) && ~isempty(get_fp_dist(replicates{j}.PlasmidModel)))
                 multiplier = sum(counts)*log10(bin_widths);
                 fp_dist = get_fp_dist(replicates{j}.PlasmidModel);
                 model = gmm_pdf(fp_dist, log10(bin_centers)')*multiplier;
