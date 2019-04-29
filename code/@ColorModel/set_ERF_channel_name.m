@@ -1,4 +1,6 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% set_ERF_channel_name is a setter function for the ColorModel class.
+% 
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -14,5 +16,5 @@ function CM=set_ERF_channel_name(CM, v)
             CM.ERF_channel = CM.Channels{i}; found=true; break; 
         end;
     end;
-    if(~found), error('Unable to find ERF channel %s',CM.ERF_channel_name); end;
+    if(~found), TASBESession.error('TASBE:ColorModel','MissingERFChannel','Unable to find ERF channel %s',CM.ERF_channel_name); end;
 

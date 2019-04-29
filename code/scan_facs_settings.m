@@ -1,4 +1,12 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% SCAN_FACS_SETTINGS checks settings in FACS files, to allow validation of lasers, etc.
+% - fileset is a cell array: {{filename [, nickname]}, ... } of files to compare
+% - channels is a cell array: {{channel [, nickname]}, ... } of channels to investigate
+% - fields is a cell array of fields to report values for
+%   default is all non-null fields except: bit, range, name, decade, log, logzero
+% - csvout is an optional name for a .csv file to dump a report to
+% Returns a cell array of the channel descriptors from all files
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -7,17 +15,9 @@
 % package distribution's top directory.
 
 function descs = scan_facs_settings(fileset,channels,fields,csvout)
-% Checks settings in FACS files, to allow validation of lasers, etc.
-% - fileset is a cell array: {{filename [, nickname]}, ... } of files to compare
-% - channels is a cell array: {{channel [, nickname]}, ... } of channels to investigate
-% - fields is a cell array of fields to report values for
-%   default is all non-null fields except: bit, range, name, decade, log, logzero
-% - csvout is an optional name for a .csv file to dump a report to
-% Returns a cell array of the channel descriptors from all files
-
 % if no fields given, take fields from first file's first channel
 if nargin<3 || numel(fields) == 0
-    [dat hdr] = fca_readfcs(fileset{1}{1});
+    [dat hdr] = fca_read(fileset{1}{1});
     [ignored desc] = get_fcs_color(dat,hdr,channels{1}{1},true);
     allfields = fieldnames(desc);
     fields = cell(0);
@@ -37,7 +37,7 @@ nonnull = zeros(size(fields));
 descs = cell(numel(fileset),numel(channels));
 for f=1:numel(fileset)
     fprintf('.');
-    [dat hdr] = fca_readfcs(fileset{f}{1});
+    [dat hdr] = fca_read(fileset{f}{1});
     for c=1:numel(channels)
         [ignored desc] = get_fcs_color(dat,hdr,channels{c}{1},true);
         descs{f,c} = desc;

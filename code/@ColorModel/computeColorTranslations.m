@@ -1,4 +1,8 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% COMPUTECOLORTRANSLATIONS generates a model to use for color
+% translation. The model relates pairs of colors to a fit. The
+% transformation is of the form Color_j = scales(i,j)*Color_i 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,34 +10,33 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-function [colorTranslationModel CM] = computeColorTranslations(CM)
-% COMPUTECOLORTRANSLATIONS generates a model to use for color
-% translation. The model relates pairs of colors to a fit. The
-% transformation is of the form Color_j = scales(i,j)*Color_i 
-
+function [colorTranslationModel, CM] = computeColorTranslations(CM)
 n = numel(CM.Channels);
 scales = zeros(n,n)*NaN;
 
 for i=1:numel(CM.ColorPairFiles)
     cp = CM.ColorPairFiles{i};
     cX = indexof(CM.Channels,cp{1});
-    if(cX==-1), error('Missing channel %s',getPrintName(cp{1})); end
+    if(cX==-1), TASBESession.error('TASBE:ColorTranslation','MissingTranslationChannel','Missing channel %s',getPrintName(cp{1})); end
     cY = indexof(CM.Channels,cp{2});
-    if(cY==-1), error('Missing channel %s',getPrintName(cp{2})); end
+    if(cY==-1), TASBESession.error('TASBE:ColorTranslation','MissingTranslationChannel','Missing channel %s',getPrintName(cp{2})); end
     cCtrl = indexof(CM.Channels,cp{3});
-    if(cCtrl==-1), error('Missing channel %s',getPrintName(cp{3})); end
+    if(cCtrl==-1), TASBESession.error('TASBE:ColorTranslation','MissingTranslationChannel','Missing channel %s',getPrintName(cp{3})); end
+    
+    if(isUnprocessed(CM.Channels{cX})), TASBESession.error('TASBE:ColorTranslation','UnprocessedChannel','Cannot translate unprocessed channel %s',getName(cX)); end;
+    if(isUnprocessed(CM.Channels{cY})), TASBESession.error('TASBE:ColorTranslation','UnprocessedChannel','Cannot translate unprocessed channel %s',getName(cY)); end;
     
     data = readfcs_compensated_au(CM,cp{4},false,true); % Leave out AF, use floor
     if(cX==cCtrl || cY==cCtrl),
-        [scales(cX,cY) CM] = compute_two_color_translation_scale(CM,data,cX,cY);
-        [scales(cY,cX) CM] = compute_two_color_translation_scale(CM,data,cY,cX);
+        [scales(cX,cY), CM] = compute_two_color_translation_scale(CM,data,cX,cY);
+        [scales(cY,cX), CM] = compute_two_color_translation_scale(CM,data,cY,cX);
     else
-        [scales(cX,cY) CM] = compute_translation_scale(CM,data,cX,cY,cCtrl);
-        [scales(cY,cX) CM] = compute_translation_scale(CM,data,cY,cX,cCtrl);
+        [scales(cX,cY), CM] = compute_translation_scale(CM,data,cX,cY,cCtrl);
+        [scales(cY,cX), CM] = compute_translation_scale(CM,data,cY,cX,cCtrl);
     end
     transerror = 10^(abs(log10(scales(cX,cY)*scales(cY,cX))));
     if(transerror > 1.05)
-        warning('Model:Color','Translation from %s to %s not invertible (round trip error = %.2f)',getPrintName(cp{1}),getPrintName(cp{2}),transerror);
+        TASBESession.warn('TASBE:ColorTranslation','NotInvertible','Translation from %s to %s not invertible (round trip error = %.2f)',getPrintName(cp{1}),getPrintName(cp{2}),transerror);
     end
 end
 
@@ -42,8 +45,12 @@ colorTranslationModel = ColorTranslationModel(CM.Channels,scales);
 end
 
 function plot_translation_graph(CM,data,i,j,scale,means,stds,which)
-    h = figure('PaperPosition',[1 1 6 4]);
-    set(h,'visible','off');
+    visiblePlots = TASBEConfig.get('colortranslation.visiblePlots');
+    plotPath = TASBEConfig.get('colortranslation.plotPath');
+    plotSize = TASBEConfig.get('colortranslation.plotSize');
+    
+    h = figure('PaperPosition',[1 1 plotSize]);
+    if(~visiblePlots), set(h,'visible','off'); end;
     %loglog(data(:,i),data(:,j),'b.','MarkerSize',1); hold on;
     %plot(means(which,i),means(which,j),'g*-');
     %plot([1e0 1e6],scale*[1e0 1e6],'r-');
@@ -56,29 +63,35 @@ function plot_translation_graph(CM,data,i,j,scale,means,stds,which)
     xlim([0 6]); ylim([0 6]);
     xlabel(sprintf('%s a.u.',clean_for_latex(getName(CM.Channels{i}))));
     ylabel(sprintf('%s a.u.',clean_for_latex(getName(CM.Channels{j}))));
-    title('Color Translation Model');
-    path = TASBEConfig.get('plots.plotPath');
-    outputfig(h,sprintf('color-translation-%s-to-%s', clean_for_latex(getPrintName(CM.Channels{i})),clean_for_latex(getPrintName(CM.Channels{j}))), path);
+    title(sprintf('Color Translation Model: %s to %s',clean_for_latex(getName(CM.Channels{i})),clean_for_latex(getName(CM.Channels{j}))));
+    outputfig(h,sprintf('color-translation-%s-to-%s', clean_for_latex(getPrintName(CM.Channels{i})),clean_for_latex(getPrintName(CM.Channels{j}))), plotPath);
 end
 
-function [scale CM] = compute_translation_scale(CM,data,i,j,ctrl)
+function [scale, CM] = compute_translation_scale(CM,data,i,j,ctrl)
+    rangeMin = TASBEConfig.get('colortranslation.rangeMin');
+    rangeMax = TASBEConfig.get('colortranslation.rangeMax');
+    binIncrement = TASBEConfig.get('colortranslation.binIncrement');
+    minSamples = TASBEConfig.get('colortranslation.minSamples');
+    channelMinimum = TASBEConfig.getexact('colortranslation.channelMinimum',{});
+    
     % Average subpopulations, then find the ratio between them.
-    bins = BinSequence(1.0,0.1,5.5,'log_bins'); % previously defaulted to 2.5
+    bins = BinSequence(rangeMin,binIncrement,rangeMax,'log_bins');
     % If minimums have been set, filter data to exclude any point that
     % doesn't meet them.
-    if(~isempty(CM.translation_channel_min))
-        which = data(:,i)>=10^CM.translation_channel_min(i) & ...
-                data(:,j)>=10^CM.translation_channel_min(j) & ...
-                data(:,ctrl)>=10^CM.translation_channel_min(ctrl);
+    if(~isempty(channelMinimum))
+        which = data(:,i)>=10^channelMinimum(i) & ...
+                data(:,j)>=10^channelMinimum(j) & ...
+                data(:,ctrl)>=10^channelMinimum(ctrl);
         data = data(which,:);
-        minbin_i = 10^CM.translation_channel_min(i);
-        minbin_j = 10^CM.translation_channel_min(j);
+        minbin_i = 10^channelMinimum(i);
+        minbin_j = 10^channelMinimum(j);
     else
         minbin_i = 1e3; minbin_j = 1e3;
     end
     
-    [counts means stds] = subpopulation_statistics(bins,data,ctrl,'geometric');
-    which = find(counts(:)>CM.translation_channel_min_samples & means(:,i)>minbin_i & means(:,j)>minbin_j & means(:,i)<1e5 & means(:,j)<1e5); % ignore points without significant support or that are near saturation
+    [counts, means, stds] = subpopulation_statistics(bins,data,ctrl,'geometric');
+    nearMax = 10^(rangeMax-0.5);
+    which = find(counts(:)>minSamples & means(:,i)>minbin_i & means(:,j)>minbin_j & means(:,i)<nearMax & means(:,j)<nearMax); % ignore points without significant support or that are near saturation
     scale = means(which,i) \ means(which,j); % find ratio of j/i
     
     % ERFize channel if possible
@@ -86,39 +99,25 @@ function [scale CM] = compute_translation_scale(CM,data,i,j,ctrl)
     k_ERF=getK_ERF(CM.unit_translation);
     if(CM.Channels{j}==CM.ERF_channel), CM.autofluorescence_model{i}=ERFize(AFMi,scale,k_ERF); end
 
-    if CM.translation_plot
+    if TASBEConfig.get('colortranslation.plot')
         plot_translation_graph(CM,data,i,j,scale,means,stds,which);
-    
-% Plots against control, if needed
-%         figure('PaperPosition',[1 1 6 4]);
-%         loglog(data(:,ctrl),data(:,i),'b.','MarkerSize',1); hold on;
-%         plot(means(which,ctrl),means(which,i),'g*-');
-%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
-%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{i}.Filter)));
-%         title('Color Translation Model');
-% 
-%         figure('PaperPosition',[1 1 6 4]);
-%         loglog(data(:,ctrl),data(:,j),'b.','MarkerSize',1); hold on;
-%         plot(means(which,ctrl),means(which,j),'g*-');
-%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
-%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{j}.Filter)));
-%         title('Color Translation Model');
     end
 end
 
-function [scale CM] = compute_two_color_translation_scale(CM,data,i,j)
+function [scale, CM] = compute_two_color_translation_scale(CM,data,i,j)
+    rangeMin = TASBEConfig.get('colortranslation.rangeMin');
+    rangeMax = TASBEConfig.get('colortranslation.rangeMax');
+    binIncrement = TASBEConfig.get('colortranslation.binIncrement');
+    minSamples = TASBEConfig.get('colortranslation.minSamples');
+    channelMinimum = TASBEConfig.getexact('colortranslation.channelMinimum',{});
+    
     % Average subpopulations, then find the ratio between them.
-    bins = BinSequence(1.0,0.1,5.5,'log_bins');% previously defaulted to 2.5
+    bins = BinSequence(rangeMin,binIncrement,rangeMax,'log_bins');
     % If minimums have been set, filter data to exclude any point that
     % doesn't meet them.
-%     if(~isempty(CM.translation_channel_min))
-%         which = data(:,i)>=10^CM.translation_channel_min(i) & ...
-%                 data(:,j)>=10^CM.translation_channel_min(j);
-%         data = data(which,:);
-%     end
-    if(~isempty(CM.translation_channel_min))
-        minbin_i = 10^CM.translation_channel_min(i);
-        minbin_j = 10^CM.translation_channel_min(j);
+    if(~isempty(channelMinimum))
+        minbin_i = 10^channelMinimum(i);
+        minbin_j = 10^channelMinimum(j);
     else
         minbin_i = 1e3; minbin_j = 1e3;
     end
@@ -127,8 +126,9 @@ function [scale CM] = compute_two_color_translation_scale(CM,data,i,j)
     num_rows = size(data,2);
     data(:,num_rows+1) = spine;
     
-    [counts means stds] = subpopulation_statistics(bins,data,num_rows+1,'geometric');
-    which = find(counts(:)>CM.translation_channel_min_samples & means(:,i)>minbin_i & means(:,j)>minbin_j & means(:,i)<1e5 & means(:,j)<1e5); % ignore points without significant support or that are near saturation
+    [counts, means, stds] = subpopulation_statistics(bins,data,num_rows+1,'geometric');
+    nearMax = 10^(rangeMax-0.5);
+    which = find(counts(:)>minSamples & means(:,i)>minbin_i & means(:,j)>minbin_j & means(:,i)<nearMax & means(:,j)<nearMax); % ignore points without significant support or that are near saturation
     scale = means(which,i) \ means(which,j); % find ratio of j/i
     
     % ERFize channel if possible
@@ -136,22 +136,7 @@ function [scale CM] = compute_two_color_translation_scale(CM,data,i,j)
     k_ERF=getK_ERF(CM.unit_translation);
     if(CM.Channels{j}==CM.ERF_channel), CM.autofluorescence_model{i}=ERFize(AFMi,scale,k_ERF); end
 
-    if CM.translation_plot
+    if TASBEConfig.get('colortranslation.plot')
         plot_translation_graph(CM,data,i,j,scale,means,stds,which);
-    
-% Plots against control, if needed
-%         figure('PaperPosition',[1 1 6 4]);
-%         loglog(data(:,ctrl),data(:,i),'b.','MarkerSize',1); hold on;
-%         plot(means(which,ctrl),means(which,i),'g*-');
-%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
-%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{i}.Filter)));
-%         title('Color Translation Model');
-% 
-%         figure('PaperPosition',[1 1 6 4]);
-%         loglog(data(:,ctrl),data(:,j),'b.','MarkerSize',1); hold on;
-%         plot(means(which,ctrl),means(which,j),'g*-');
-%         xlabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{ctrl}.Filter)));
-%         ylabel(sprintf('%s a.u.',clean_for_latex(CM.Channels{j}.Filter)));
-%         title('Color Translation Model');
     end
 end

@@ -13,15 +13,15 @@ function [CM] = setupRedPeakCM()
 
 stem0312 = '../TASBEFlowAnalytics-Tutorial/example_controls/2012-03-12_';
 
-beadfile = [stem0312 'Beads_P3.fcs'];
-blankfile = [stem0312 'blank_P3.fcs'];
+beadfile = DataFile('fcs', [stem0312 'Beads_P3.fcs']);
+blankfile = DataFile('fcs', [stem0312 'blank_P3.fcs']);
 
 % Create one channel / colorfile pair for each color
 channels = {}; colorfiles = {};
 channels{1} = Channel('PE-Tx-Red-YG-A', 561, 610, 20);
 channels{1} = setPrintName(channels{1}, 'mKate');
 channels{1} = setLineSpec(channels{1}, 'r');
-colorfiles{1} = [stem0312 'mkate_P3.fcs'];
+colorfiles{1} = DataFile('fcs', [stem0312 'mkate_P3.fcs']);
 
 % Multi-color controls are used for converting other colors into ERF units
 % Any channel without a control mapping it to ERF will be left in arbirary units.
@@ -123,7 +123,7 @@ assertTrue(isempty(UT.peak_sets{1}));
 
 function [CM] = setupBV421CM()
 
-beadfile = '../TASBEFlowAnalytics-Tutorial/example_controls/171221_E1_p1_AJ02.fcs';
+beadfile = DataFile('fcs', '../TASBEFlowAnalytics-Tutorial/example_controls/171221_E1_p1_AJ02.fcs');
 blankfile = [];
 
 % Create one channel / colorfile pair for each color
@@ -196,20 +196,20 @@ function [CM] = setupYellowPeakCM()
 
 stem0312 = '../TASBEFlowAnalytics-Tutorial/example_controls/2012-03-12_';
 
-beadfile = [stem0312 'Beads_P3.fcs'];
-blankfile = [stem0312 'blank_P3.fcs'];
+beadfile = DataFile('fcs', [stem0312 'Beads_P3.fcs']);
+blankfile = DataFile('fcs', [stem0312 'blank_P3.fcs']);
 
 % Create one channel / colorfile pair for each color
 channels = {}; colorfiles = {};
 channels{1} = Channel('PE-Tx-Red-YG-A', 561, 610, 20);
 channels{1} = setPrintName(channels{1}, 'mKate');
 channels{1} = setLineSpec(channels{1}, 'r');
-colorfiles{1} = [stem0312 'mkate_P3.fcs'];
+colorfiles{1} = DataFile('fcs', [stem0312 'mkate_P3.fcs']);
 
 channels{2} = Channel('FITC-A', 488, 515, 20);
 channels{2} = setPrintName(channels{2}, 'EYFP');
 channels{2} = setLineSpec(channels{2}, 'r');
-colorfiles{2} = [stem0312 'EYFP_P3.fcs'];
+colorfiles{2} = DataFile('fcs', [stem0312 'EYFP_P3.fcs']);
 
 % Multi-color controls are used for converting other colors into ERF units
 % Any channel without a control mapping it to ERF will be left in arbirary units.

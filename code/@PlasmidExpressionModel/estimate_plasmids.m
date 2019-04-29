@@ -1,4 +1,8 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+%%%% WARNING: ESTIMATES EXPERIMENTAL AND UNTRUSTWORTHY
+%%%% DISABLE AND DEPRECATE
+% ESTIMATE_PLASMIDS is currently kept to run Gaussian mixture bimodal fit
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed

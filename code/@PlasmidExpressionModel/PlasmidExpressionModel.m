@@ -1,15 +1,6 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
-% in the AUTHORS file in TASBE analytics package distribution's top directory.
-%
-% This file is part of the TASBE analytics package, and is distributed
-% under the terms of the GNU General Public License, with a linking
-% exception, as described in the file LICENSE in the TASBE analytics
-% package distribution's top directory.
-
 % PlasmidExpressionModel is the class that maps ERFs to constitutive
-% fluorescence to plasmid count
+% fluorescence to plasmid count with the following properties:
 
-  
         %plot_pem = false
         %CFP_counts              % source for model
         % piecewise-gaussian model of plasmid distribution
@@ -22,8 +13,14 @@
         % ERF -> plasmid function
         %bins                    % ERF bins
         %estimated_plasmids      % corresponding estimates per bin
-
-        
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
+% in the AUTHORS file in TASBE analytics package distribution's top directory.
+%
+% This file is part of the TASBE analytics package, and is distributed
+% under the terms of the GNU General Public License, with a linking
+% exception, as described in the file LICENSE in the TASBE analytics
+% package distribution's top directory.
 
  function PEM = PlasmidExpressionModel(cfp_data,CFP_af,CFP_noise,ERF_per_plasmid,drop_threshold,n_components)
         
@@ -61,13 +58,17 @@
             %%%% GAUSSIAN MIXTURE MODEL METHOD
             which = cfp_data>drop_threshold;
             if(sum(which)<10)
-                warning('Model:CFPDistributionSeparation','Not enough data to model');
+                TASBESession.warn('Model:CFPDistributionSeparation','NotEnoughData','Not enough data to model');
                 PEM=class(PEM,'PlasmidExpressionModel');
                 return;
             end
             
             % Seeded centers: [8], [5 8], [5 6.5 8], [5 6 7 8], ...
-            min_center =  log10(getMeanERF(CFP_af));
+            if(~isempty(CFP_af)),
+                min_center = log10(getMeanERF(CFP_af));
+            else
+                min_center = 1;
+            end
             if n_components == 1, 
                 initial_centers = 1;
             else
@@ -76,12 +77,12 @@
             [label PEM.fp_dist] = emgm(log10(cfp_data(which))',initial_centers); % compute on log scale
 
             if (numel(PEM.fp_dist.mu) == 1 || max(PEM.fp_dist.weight)>0.999) && n_components>1, % failure to separate -> duplicate
-                warning('Model:CFPDistributionSeparation','Distribution could not be separated');
+                TASBESession.warn('Model:CFPDistributionSeparation','CannotSeparateDistribution','Distribution could not be separated');
                 PEM.fp_dist.mu(2) = PEM.fp_dist.mu(1);
                 PEM.fp_dist.Sigma(:,:,2) = PEM.fp_dist.Sigma(:,:,1); % This Sigma is a *variance*, and not a std. dev.
                 PEM.fp_dist.weight = [0.5 0.5];
             else if numel(PEM.fp_dist.mu) < n_components
-                warning('Model:CFPDistributionSeparation','Less components than expected: %i vs. %i',numel(PEM.fp_dist.mu),n_components);
+                TASBESession.warn('Model:CFPDistributionSeparation','NotEnoughComponents','Less components than expected: %i vs. %i',numel(PEM.fp_dist.mu),n_components);
                 % add zero-weight components
                 for i = (numel(PEM.fp_dist.mu)+1):n_components
                     PEM.fp_dist.mu(i) = PEM.fp_dist.mu(1);

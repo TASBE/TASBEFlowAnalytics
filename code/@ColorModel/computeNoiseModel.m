@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% COMPUTENOISEMODEL computes a noise model object from an inputted ColorModel
+% object
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -28,7 +31,7 @@ for i=1:numel(CM.Channels)
         for k=1:2 % find target channel
             if(CM.Channels{i}==cp{k})
                 target = indexof(CM.Channels,cp{k}); found=true; target_id = k;
-                if(target==-1), error('Missing channel %s',getPrintName(cp{k})); end
+                if(target==-1), TASBESession.error('TASBE:ColorModel','MissingChannel','Missing channel %s',getPrintName(cp{k})); end
             end
         end
         if ~found, continue; end;
@@ -37,7 +40,7 @@ for i=1:numel(CM.Channels)
             ctrl_idx = 3-target_id;
         end
         cCtrl = indexof(CM.Channels,cp{ctrl_idx});
-        if(cCtrl==-1), error('Missing channel %s',getPrintName(cp{ctrl_idx})); end
+        if(cCtrl==-1), TASBESession.error('TASBE:ColorModel','MissingChannel','Missing channel %s',getPrintName(cp{ctrl_idx})); end
         
         % read the file and get another layer of statistics
         data = readfcs_compensated_ERF(CM,cp{4},false,true);
@@ -54,13 +57,13 @@ for i=1:numel(CM.Channels)
         if(sum(which)>0)
             minset(n_files) = min(localstds(which,target));
         else
-            warning('Model:Noise','Color mapping file "%s" has no significant fluorescent subpopulations',cp{4});
+            TASBESession.warn('TASBE:NoiseModel','NotEnoughData','Color mapping file "%s" has no significant fluorescent subpopulations',getFile(cp{4}));
             minset(n_files) = 0;
         end
     end
     
     if n_files == 0,
-        warning('Model:Noise','Cannot compute noise model for %s: no color mapping files available',getName(CM.Channels{i}));
+        TASBESession.warn('TASBE:NoiseModel','NoColorMappings','Cannot compute noise model for %s: no color mapping files available',getName(CM.Channels{i}));
         continue;
     end
     

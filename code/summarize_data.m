@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% SUMMARIZE_DATA Given the data from each sample, summarize it into a single
+% collection of statistics per condition
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -7,9 +10,6 @@
 % package distribution's top directory.
 
 function experimentresults = summarize_data( colorModel, experiment, analysisParams, sampleresults)
-%SUMMARIZE_DATA Given the data from each sample, summarize it into a single
-% collection of statistics per condition
-
 filenames = getInducerLevelsToFiles(experiment); % array of file names
 n_conditions = numel(filenames);
 
@@ -146,8 +146,8 @@ for i=1:n_conditions,
 end
 
 % Test for sanity on variation in sample/sample event counts - should be less than 10x
-if max_events/min_events > 10
-    warning('TASBE:SampleSize','High variation in events per sample:\n  Condition %i, sample %i = %i\n  Condition %i, sample %i = %i',...
+if max_events/min_events > TASBEConfig.get('flow.replicateEventRatioWarning')
+    TASBESession.warn('TASBE:SummarizeData','HighSampleSizeVariation','High variation in events per sample:\n  Condition %i, sample %i = %i\n  Condition %i, sample %i = %i',...
         max_sample(1), max_sample(2), max_events, min_sample(1), min_sample(2), min_events);
 end
 

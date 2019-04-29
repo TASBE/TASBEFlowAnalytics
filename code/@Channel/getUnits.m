@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% getUnits is a getter function for the Channel class. (either 'a.u.' or
+% ERF or Eum)
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -8,7 +11,7 @@
 
 function units = getUnits(C)
     if isPseudo(C)
-        units = 'pseudoERF';
+        units = 'a.u.';
     else
-        units = 'ERF';
+        units = C.Units;
     end

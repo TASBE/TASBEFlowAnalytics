@@ -1,6 +1,7 @@
-function plot_compensated_controls(CM)
-
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% PLOT_COMPENSATED_CONTROLS outputs plots of compensated positive controls
+% of inputted ColorModel object. Called in CM's resolve function.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -8,21 +9,27 @@ function plot_compensated_controls(CM)
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
+function plot_compensated_controls(CM)
+figsize = TASBEConfig.get('compensation.plotSize');
+
 n = numel(CM.Channels);
 
-if n==1, return; end; % nothing to plot if there's only one channel
+n_processed = 0;
+for i=1:n, if(~isUnprocessed(CM.Channels{i})), n_processed=n_processed+1; end; end;
+if n_processed<=1, return; end; % nothing to plot if there's only one channel
 
 for driven=1:n
+    if(isUnprocessed(CM.Channels{driven})), continue; end; % skip unprocessed channels
     data = readfcs_compensated_au(CM,CM.ColorFiles{driven},0,0);
 
     for passive=1:n,
-        if (passive == driven), continue; end;
+        if (passive == driven || isUnprocessed(CM.Channels{passive})), continue; end;
             
-        h = figure('PaperPosition',[1 1 6 4]);
+        h = figure('PaperPosition',[1 1 figsize]);
         set(h,'visible','off');
         pos = data(:,driven)>1;
         if sum(pos)==0, 
-            warning('ColorModel:Compensation','Cannot compensate %s with %s',getPrintName(CM.Channels{driven}),getPrintName(CM.Channels{passive}));
+            TASBESession.warn('TASBE:CompensationModel','CannotCompensate','Cannot compensate %s with %s',getPrintName(CM.Channels{driven}),getPrintName(CM.Channels{passive}));
             continue; 
         end;
         pmin = percentile(data(pos,passive),0.1); pmax = percentile(data(pos,passive),99.9);

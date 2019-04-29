@@ -1,4 +1,16 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% BinSequence holds geometric or arithmetic sequences of bins
+% BinSequence(min_edge, step, max_edge, mode)
+%    Mode = 'geometric': centers at geometric mean of edges
+%    Mode = 'log_bins': geometric, except input values are assumed to be log10 scale
+%    Mode = 'arithmetic': centers at arithmetic mean of edges
+%
+% mode        % 'geometric' or 'arithmetic'
+% n_bins      % number of bins
+% bin_edges   % array n_bins+1
+% bin_centers % array
+% bin_widths  % width per bin
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,17 +18,6 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-% BinSequence(min_edge, step, max_edge, mode)
-%    Mode = 'geometric': centers at geometric mean of edges
-%    Mode = 'log_bins': geometric, except input values are assumed to be log10 scale
-%    Mode = 'arithmetic': centers at arithmetic mean of edges
-% BinSequence holds geometric or arithmetic sequences of bins
-
-% mode        % 'geometric' or 'arithmetic'
-% n_bins      % number of bins
-% bin_edges   % array n_bins+1
-% bin_centers % array
-% bin_widths  % width per bin
 function B = BinSequence(min_edge, step, max_edge, mode)
     if nargin == 0
         B.mode = '';
@@ -43,7 +44,7 @@ function B = BinSequence(min_edge, step, max_edge, mode)
                 B.bin_centers = mean([B.bin_edges(1:end-1);B.bin_edges(2:end)]);
                 B.bin_widths = step;
             otherwise
-                error('Unknown bin mode %s',mode);
+                TASBESession.error('TASBE:BinSequence','UnknownBinMode','Unknown bin mode %s',mode);
         end
     end
             

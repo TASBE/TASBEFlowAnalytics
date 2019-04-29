@@ -1,0 +1,28 @@
+{
+	"channels": [
+		{
+			"name": "FITC-A",
+			"print_name": "EYFP",
+			"unit": "a.u."
+		},
+		{
+			"name": "PE-Tx-Red-YG-A",
+			"print_name": "mKate",
+			"unit": "a.u."
+		},
+		{
+			"name": "Pacific Blue-A",
+			"print_name": "EBFP2",
+			"unit": "a.u."
+		},
+		{
+			"name": "Derived_Value",
+			"print_name": "Derived",
+			"unit": "Boolean"
+		}
+	],
+	"filenames": [
+	"LacI-extra-column.csv"
+	]
+}
+

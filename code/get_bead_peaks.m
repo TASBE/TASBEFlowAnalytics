@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% GET_BEAD_PEAKS returns the bead peak information (peaks, units, and
+% batch) from an inputted bead model and batch using bead catalog.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,22 +9,31 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-function [peaks units batch] = get_bead_peaks(model,channel,batch)
+function [peaks, units, batch] = get_bead_peaks(model,channel,batch)
     % Model must be a precise string match with the catalog, e.g., "SpheroTech RCP-30-5A"
     % Channel can either be a Channel matched to laser/filter, or a name matched to the name in the catalog
     % Batch is an optional parameter: if no batch is specified (or spec is empty), the first listed batch will be used
     if nargin<3, batch = []; end; % if batch undefined, set to empty
-    
+
     catalog = getBeadCatalog();
+    % remove instances of 'Lot' or 'lot' from the input batch
+    if ~isempty(batch), batch2 = strrep(batch, 'Lot', ''); else batch2 = []; end;
+    if ~isempty(batch), batch2 = strrep(batch2, 'lot', ''); end;
+    % also, trim any whitespace left
+    if(~isempty(batch2)), batch2 = strtrim(batch2); end;
+    
     % search for a matching model of bead (e.g., 'SpheroTech RCP-30-5A')
     for i=1:numel(catalog)
         modelEntry = catalog{i};
         if strcmp(model,modelEntry{1})
             % search for a matching bead batch, if specified (e.g., 'Lot AG01')
+            num_batch_matches = 0;
+            matched_batchEntry = modelEntry{2};
             for j=2:numel(modelEntry)
                 batchEntry = modelEntry{j};
-                if isempty(batch) || strcmp(batch,batchEntry{1})
+                if isempty(batch)
                     % search for a matching channel, e.g., laser = 488, filter = 530/30
+                    % Example input: 'FITC'
                     % laser/filter must match precisely; beyond that there is no requirement
                     for k=2:numel(batchEntry)
                         channelEntry = batchEntry{k};
@@ -36,13 +48,42 @@ function [peaks units batch] = get_bead_peaks(model,channel,batch)
                         end
                     end
                     if isempty(batch), batch = 'unspecified'; end; % put in a scratch name for an omitted batch name
-                    error('Unable to find bead catalog channel entry for model %s, batch %s, channel %s',model,batch,channel);
+                    TASBESession.error('TASBE:BeadCatalog', 'NoChannel', 'Unable to find bead catalog channel entry for model %s, batch %s, channel %s',model,batch,channel);
+                
+                elseif strfind(batchEntry{1}, batch2)
+                    num_batch_matches = num_batch_matches + 1;
+                    matched_batchEntry = batchEntry;
                 end
             end
-            error('Unable to find bead catalog batch entry for model %s, batch %s',model,batch);
+            
+            if num_batch_matches == 1
+                % search for a matching channel, e.g., laser = 488, filter = 530/30
+                % Example input: 'FITC'
+                % laser/filter must match precisely; beyond that there is no requirement
+                for k=2:numel(matched_batchEntry)
+                    channelEntry = matched_batchEntry{k};
+                    if ischar(channel) % if string, lookup by units; comparison will happen later
+                        match = strcmp(channel,channelEntry{1});
+                    end
+                    if match
+                        batch = matched_batchEntry{1}; % report the actual used batch
+                        units = channelEntry{2};
+                        peaks = channelEntry{3};
+                        return;
+                    end
+                end
+                if isempty(batch), batch = 'unspecified'; end; % put in a scratch name for an omitted batch name
+                TASBESession.error('TASBE:BeadCatalog', 'NoChannel', 'Unable to find bead catalog channel entry for model %s, batch %s, channel %s',model,batch,channel);
+            
+            elseif num_batch_matches > 1
+                TASBESession.error('TASBE:BeadCatalog', 'VagueInput', 'Input bead catalog batch entry for model %s, batch %s is too vague. Reference BeadCatalog.xlsx for batch entry options.',model,batch);
+            
+            else
+                TASBESession.error('TASBE:BeadCatalog', 'NoBatch', 'Unable to find bead catalog batch entry for model %s, batch %s',model,batch);
+            end
         end
     end
-    error('Unable to find bead catalog model entry for %s',model);
+    TASBESession.error('TASBE:BeadCatalog', 'NoModel', 'Unable to find bead catalog model entry for %s',model);
 end
 
 % The catalog has a 4-layer cell structure:
@@ -52,16 +93,16 @@ function returned = getBeadCatalog(forceReload)
     if nargin<1, forceReload=false; end;
     if isempty(catalog) || forceReload,
         % ISSUE-81: The cell range of the spreadsheet must be updated whenever BeadCatalog.xlsx is updated.
-        [nums txts combo] = xlsread(TASBEConfig.get('beads.catalogFileName'), 1, 'A1:M95');
+        [nums txts combo] = xlsread(TASBEConfig.get('beads.catalogFileName'), 1, 'A1:M114');
         catalog = parseCatalog(combo);
     end
     returned = catalog;
 end
 
 function x = emptyOrNaN(v)
-    if isempty(v), 
+    if isempty(v),
         x = true; return;
-    elseif isnumeric(v) && isnan(v(1)), 
+    elseif isnumeric(v) && isnan(v(1)),
         x = true; return;
     else
         x = false; return;
@@ -81,7 +122,7 @@ function catalog = parseCatalog(entries)
         end
     end
 end
-        
+
 function [model currentLine] = parseModel(entries,currentLine)
     % from first line, take first cell to be name; ignore rest
     name = entries{currentLine,1};
@@ -110,32 +151,32 @@ function [batch currentLine] = parseBatch(entries,currentLine)
         currentLine = currentLine+1;
     end
 end
-        
+
 function channelEntry = parseChannel(entries,currentLine)
     row = entries(currentLine,2:end);
     name = row{1};
     laser = row{2};
-    if ischar(row{3}), filter = row{3}; 
+    if ischar(row{3}), filter = row{3};
     elseif emptyOrNaN(row{3}), filter = 'Unspecified';
-    else error('Line %i: filter must be either a string or blank',currentLine);
+    else TASBESession.error('TASBE:BeadCatalog','BadFilter','Line %i: filter must be either a string or blank',currentLine);
     end
     units = row{4};
-    try 
+    try
         lastPeak = find(~cellfun(@emptyOrNaN,row(5:end)),1,'last');
     catch e
-        error('Line %i: couldn''t interpret peak specifications',currentLine);
+        TASBESession.error('TASBE:BeadCatalog','BadPeakSpecifications','Line %i: couldn''t interpret peak specifications',currentLine);
     end
     peaks = [row{4+(1:lastPeak)}];
     if isempty(peaks)
-        error('Line %i: bead peak specification must contain at least one peak.',currentLine);
+        TASBESession.error('TASBE:BeadCatalog','MissingPeakSpecification','Line %i: bead peak specification must contain at least one peak.',currentLine);
     end
-    
+
     % Code added to make sure Octave doesn't throw away the empty peak
     % cells.
     cellPeaks = {row{4+(1:lastPeak)}};
     empties = cellfun('isempty', cellPeaks);
     cellPeaks(empties) = {NaN};
     peaks = cell2mat(cellPeaks);
-    
+
     channelEntry = {name, units, peaks};
 end

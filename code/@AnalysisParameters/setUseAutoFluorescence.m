@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% setUseAutoFluorescence modifies use_autofluorescence property for
+% inputted AnalysisParameters
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,5 +9,5 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-function AP=setUseAutofluorescence(AP,v)
+function AP=setUseAutoFluorescence(AP,v)
     AP.use_autofluorescence=v;

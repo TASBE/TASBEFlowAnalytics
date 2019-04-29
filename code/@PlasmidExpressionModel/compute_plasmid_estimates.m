@@ -1,14 +1,15 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% COMPUTE_PLASMID_ESTIMATES computes the active and inactive estimates for
+% a PlasmidExpressionModel object.
+%%%%%%
+% WARNING: THIS FUNCTIONALITY IS EXPERIMENTAL AND SHOULD NOT BE TRUSTED
+%%%%%%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
 % under the terms of the GNU General Public License, with a linking
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
-
-%%%%%%
-% WARNING: THIS FUNCTIONALITY IS EXPERIMENTAL AND SHOULD NOT BE TRUSTED
-%%%%%%
 
 function [estimates PEM] = compute_plasmid_estimates(PEM)
     ERF_off = round(log10(PEM.ERF_per_plasmid)/log10(get_bin_widths(PEM.bins)));
@@ -27,8 +28,7 @@ function [estimates PEM] = compute_plasmid_estimates(PEM)
     pdist = p_gaussian(log10(bin_edges(1:num_bins)),log10(bin_edges(2:(num_bins+1))), ...
         log10(PEM.plasmid_mean),log10(PEM.plasmid_std));
 
-    
-    
+
     % E(p|c) = sum_p p * P(c and p)/P(c) = 1/P(c) * E(p and c)
     E_p_and_c = zeros(get_n_bins(PEM.bins),1); % E(p and c) = sum_p p P(c and p)
     p_cfp = zeros(get_n_bins(PEM.bins),1);     % P(c) = sum_p P(c and p)

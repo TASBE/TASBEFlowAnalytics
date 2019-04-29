@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% APPLYFILTER is an abstract filter method filters raw fcs data using an
+% inputted Filter object
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -12,4 +15,4 @@ function gated = applyFilter(F,fcshdr,rawfcs)
 % rawfcs is the data to be filtered
 % gated is the replacement for rawfcs
 
-error('Attempted to invoke abstract filter method');
+TASBESEssion.error('TASBE:Filter','AbstractFilterInvoked','Attempted to invoke abstract filter method');

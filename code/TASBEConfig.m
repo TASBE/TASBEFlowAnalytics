@@ -25,14 +25,47 @@ classdef TASBEConfig
             % Generic flow data analysis
             s.flow = struct(); doc.flow = struct();
             doc.flow.about = 'General settings for flow cytometry data analysis';
+            doc.flow.maxEvents = 'Drop events above this count to avoid memory issues';
+            s.flow.maxEvents = 1e6;
             doc.flow.rangeMin = 'bin minimum (log10 scale)';
             s.flow.rangeMin = 0;                           
             doc.flow.rangeMax = 'bin maximum (log10 scale)';
             s.flow.rangeMax = 7;
+            doc.flow.onThreshold = 'Threshold to differentiate between on and off events. Points with values equal to threshold are placed in the on group.';
+            s.flow.onThreshold = 0;
             doc.flow.outputPointCloud = 'if true, output point-cloud for each calibrated read';
             s.flow.outputPointCloud = false;
             doc.flow.pointCloudPath = 'location for point-cloud outputs';
             s.flow.pointCloudPath = 'CSV/';
+            doc.flow.pointCloudFileType = 'what type of pathname to write to point-cloud JSON header file. 0 stands for absolute, 1 stands for relative.';
+            s.flow.pointCloudFileType = 0;
+            doc.flow.dataCSVPath = 'location for data summary CSVs';
+            s.flow.dataCSVPath = 'CSV/';
+            doc.flow.outputHistogramFile = 'if true, output histogram file for batch analysis';
+            s.flow.outputHistogramFile = true;
+            doc.flow.outputStatisticsFile = 'if true, output statistics file for batch analysis';
+            s.flow.outputStatisticsFile = true;
+            doc.flow.channel_template_file = 'File to check laser/filter settings against (defaults to bead file)';
+            s.flow.channel_template_file = [];
+            % sample size/gating warning thresholds
+            doc.flow.smallFileWarning = 'Threshold for warning that event count is unusually low';
+            s.flow.smallFileWarning = 10000;
+            doc.flow.gateDiscardsWarning = 'Threshold for warning gates are discarding too high a fraction of events';
+            s.flow.gateDiscardsWarning = 0.1;
+            doc.flow.preGateDiscardsWarning = 'Threshold for warning pre-gates are discarding too high a fraction of events';
+            s.flow.preGateDiscardsWarning = [];
+            defaults('flow.preGateDiscardsWarning') = 'flow.gateDiscardsWarning';
+            doc.flow.postGateDiscardsWarning = 'Threshold for warning post-gates are discarding too high a fraction of events';
+            s.flow.postGateDiscardsWarning = [];
+            defaults('flow.postGateDiscardsWarning') = 'flow.gateDiscardsWarning';
+            doc.flow.eventRatioWarning = 'Generic threshold for warning about different event counts.';
+            s.flow.eventRatioWarning = 10;
+            doc.flow.replicateEventRatioWarning = 'Threshold to warn on variation in replicate event counts.';
+            s.flow.replicateEventRatioWarning = [];
+            defaults('flow.replicateEventRatioWarning') = 'flow.eventRatioWarning';
+            doc.flow.conditionEventRatioWarning = 'Threshold to warn on variation in condition event counts.';
+            s.flow.conditionEventRatioWarning = [];
+            defaults('flow.conditionEventRatioWarning') = 'flow.eventRatioWarning';
 
             % generic plots
             s.plots = struct(); doc.plots = struct();
@@ -77,50 +110,116 @@ classdef TASBEConfig
             defaults('calibration.heatmapPlotSize') = 'plots.heatmapPlotSize';
             
             % Gating
-%             s.gating = struct();
-%             s.gating.fractionFromExtrema = 0.95;    % Fraction of range considered not-saturated and thus included in gating
+            s.gating = struct(); doc.gating = struct();
+            doc.gating.about = 'Settings for GMM Gating';
+            doc.gating.fixedSeed = 'When true, controls the random seed for GMM Gating';
+            s.gating.fixedSeed = true;
+            % gating control parameters
+            doc.gating.deviations = 'Number of standard deviations within which gate selects data';
+            s.gating.deviations = 2.0;
+            doc.gating.tightening = 'Amount that selected gate components are further tightened (range: [0,1])';
+            s.gating.tightening = 0.0;
+            doc.gating.kComponents = 'Number of gaussian components in a gate';
+            s.gating.kComponents = 2;
+            doc.gating.channelNames = 'Channels to use for gating'; % used to also include 'FSC-H','FSC-W','SSC-H','SSC-W'
+            s.gating.channelNames = {'FSC-A','SSC-A'}; 
 %             s.gating.saturationWarning = 0.3;       % Warn about saturation distorting gates if fraction non-extrema less than this level
-%             s.gating.numComponents = 2;             % number of gaussian components searched for
-%             s.gating.rankedComponents = 1;          % Array of which components will be selected, in order of tightness
-%             s.gating.deviations = 2.0;              % number of standard deviations out the gaussian that will be allowed
-%             s.gating.tightening = [];               % If set, amount that selected components are further tightened (range: [0,1])
-%             s.gating.plot = [];                     % Should a gating plot be created?
-%             s.gating.showNonselected = true;        % Should plot show only the selected component(s), or all of them?
-%             defaults('gating.plot') = 'calibration.plot';
-%             s.gating.visiblePlots = [];             % should gating plot be visible, or just created?
-%             defaults('gating.visiblePlots') = 'calibration.visiblePlots';
-%             s.gating.plotPath = [];                 % where should gating plot go?
-%             defaults('gating.plotPath') = 'calibration.plotPath';
-%             s.gating.plotSize = [];                 % What size (in inches) should gating plot be?
-%             defaults('gating.plotSize') = 'calibration.heatmapPlotSize';
+            doc.gating.fraction = 'Fraction of range considered saturated and thus excluded from computation';
+            s.gating.fraction = 0.95;
+            doc.gating.selectedComponents = 'Set to force selection of particular components';
+            s.gating.selectedComponents = [];
+            % gating custom plotting parameters
+            doc.gating.showNonselected = 'When true, show all gate components; when false, selected components only.';
+            s.gating.showNonselected = true;
+            doc.gating.largeOutliers = 'When true, plot gate outliers with large dots';
+            s.gating.largeOutliers = true;
+            doc.gating.range = 'Force gate heatmap plotting range of [x_min y_min; x_max y_max]';
+            s.gating.range = [];
+            doc.gating.density = 'Gate heatmap style: set to 1 for image, 0 for contour';
+            s.gating.density = 1;
+            % gating standard plotting parameters
+            doc.gating.plot = 'Determines whether gating plots should be created';
+            s.gating.plot = [];
+            defaults('gating.plot') = 'calibration.plot';
+            doc.gating.visiblePlots = 'If true, gating plots are visible; otherwise, they are hidden for later saving';
+            s.gating.visiblePlots = [];
+            defaults('gating.visiblePlots') = 'calibration.visiblePlots';
+            doc.gating.plotPath = 'Location for gating plots';
+            s.gating.plotPath = [];                 % where should gating plot go?
+            defaults('gating.plotPath') = 'calibration.plotPath';
+            doc.gating.plotSize = 'Size (in inches) [X Y] for gating figures';
+            s.gating.plotSize = [];                 % What size (in inches) should gating plot be?
+            defaults('gating.plotSize') = 'calibration.heatmapPlotSize';
+            
             
             % Autofluorescence removal
-%             s.autofluorescence = struct();
-%             s.autofluorescence.dropFractions = 0.025;   % What fraction of the extrema should be dropped before computing autofluorescence?
-%             s.autofluorescence.plot = [];               % Should an autofluorescence plot be created?
-%             defaults('autofluorescence.plot') = 'calibration.plot';
-%             s.autofluorescence.visiblePlots = [];       % should autofluorescence plot be visible, or just created?
-%             defaults('autofluorescence.visiblePlots') = 'calibration.visiblePlots';
-%             s.autofluorescence.plotPath = [];           % where should autofluorescence plot go?
-%             defaults('autofluorescence.plotPath') = 'calibration.plotPath';
-%             s.autofluorescence.plotSize = [];           % What size (in inches) should autofluorescence plot be?
-%             defaults('autofluorescence.plotSize') = 'calibration.graphPlotSize';
+            s.autofluorescence = struct(); doc.autofluorescence = struct();
+            doc.autofluorescence.about = 'Settings for autofluorescence models';
+            doc.autofluorescence.dropFraction = 'Fraction of extrema (high and low) to drop before computing autofluorescence';
+            s.autofluorescence.dropFraction = 0.025;
+            doc.autofluorescence.plot = 'Determines whether autofluorescence plots should be created';
+            s.autofluorescence.plot = [];
+            defaults('autofluorescence.plot') = 'calibration.plot';
+            doc.autofluorescence.visiblePlots = 'If true, autofluorescence plots are visible; otherwise, they are hidden for later saving';
+            s.autofluorescence.visiblePlots = [];
+            defaults('autofluorescence.visiblePlots') = 'calibration.visiblePlots';
+            doc.autofluorescence.plotPath = 'Location for autofluorescence plots';
+            s.autofluorescence.plotPath = [];
+            defaults('autofluorescence.plotPath') = 'calibration.plotPath';
+            doc.autofluorescence.plotSize = 'Size (in inches) [X Y] for autofluorescence figures';
+            s.autofluorescence.plotSize = [];
+            defaults('autofluorescence.plotSize') = 'calibration.graphPlotSize';
             
             % Spectral bleed compensation
-            s.compensation = struct();
+            s.compensation = struct(); doc.compensation = struct();
+            doc.compensation.about = 'Settings for spectral bleed compensation';
+            doc.compensation.minimumDrivenLevel = 'Uniformly ignores all less than this level of a.u.';
             s.compensation.minimumDrivenLevel = 1e2;    % uniformly ignore all less than this level of a.u. 
+            doc.compensation.maximumDrivenLevel = 'Uniformly ignores all greater than this level of a.u.';
             s.compensation.maximumDrivenLevel = Inf;     % uniformly ignore all greater than this level of a.u. 
+            doc.compensation.minimumBinCount = 'Ignores bins with less than this many elements';
             s.compensation.minimumBinCount = 10;        % ignore bins with less than this many elements
+            doc.compensation.highBleedWarning = 'Warns about high bleed at this level';
             s.compensation.highBleedWarning = 0.1;      % Warn about high bleed at this level
+            doc.compensation.plot = 'Determines whether compensation plots should be created';
             s.compensation.plot = [];                   % Should compensation plots be created?
             defaults('compensation.plot') = 'calibration.plot';
+            doc.compensation.visiblePlots = 'If true, compensation plots are visible; otherwise, they are hidden for later saving';
             s.compensation.visiblePlots = [];           % should compensation plot be visible, or just created?
             defaults('compensation.visiblePlots') = 'calibration.visiblePlots';
+            doc.compensation.plotPath = 'Location for compensation plots';
             s.compensation.plotPath = [];               % where should compensation plot go?
             defaults('compensation.plotPath') = 'calibration.plotPath';
-            s.compensation.plotSize = [];               % What size (in inches) should compensation figure be?
+            doc.compensation.plotSize = 'Size (in inches) [X Y] for compensation figures';
+            s.compensation.plotSize = [6 4];
             defaults('compensation.plotSize') = 'calibration.heatmapPlotSize';
             
+            % Color translation
+            s.colortranslation = struct();
+            doc.colortranslation.about = 'Settings for color translation models';
+            doc.colortranslation.rangeMin = 'Minimum for color translation histogram range (log10 scale)';
+            s.colortranslation.rangeMin = 1;
+            doc.colortranslation.rangeMax = 'Maximum in histogram for computing color translation (log10 scale)';
+            s.colortranslation.rangeMax = 5.5;
+            doc.colortranslation.binIncrement = 'Resolution of histogram bins used for computing color translation (log10 scale)';
+            s.colortranslation.binIncrement = 0.1;
+            doc.colortranslation.minSamples = 'Minimum number of samples in a histogram bin for use in computing color translation';
+            s.colortranslation.minSamples = 100;
+            doc.colortranslation.channelMinimum = 'If set to [M1, M2, ...] trims channel i values below 10^Mi; otherwise drops those below 10^3';
+            s.colortranslation.channelMinimum = {};
+            doc.colortranslation.plot = 'Determines whether color translation plots should be created';
+            s.colortranslation.plot = [];
+            defaults('colortranslation.plot') = 'calibration.plot';
+            doc.colortranslation.visiblePlots = 'If true, color translation plots are visible; otherwise, they are hidden for later saving';
+            s.colortranslation.visiblePlots = [];
+            defaults('colortranslation.visiblePlots') = 'calibration.visiblePlots';
+            doc.colortranslation.plotPath = 'Location for color translation plots';
+            s.colortranslation.plotPath = [];
+            defaults('colortranslation.plotPath') = 'calibration.plotPath';
+            doc.colortranslation.plotSize = 'Size (in inches) [X Y] for color translation figures';
+            s.colortranslation.plotSize = [6 4];
+            defaults('colortranslation.plotSize') = 'calibration.heatmapPlotSize';
+
             % Beads
             s.beads = struct(); doc.beads = struct();
             doc.beads.about = 'Settings controlling the interpretation of color calibration beads';
@@ -132,9 +231,9 @@ classdef TASBEConfig
             s.beads.peakThreshold = [];
             doc.beads.rangeMin = 'Minimum value considered for bead peaks (log scale: 10^rangeMin)';
             s.beads.rangeMin = 2;
-            doc.beads.rangeMin = 'Maximum value considered for bead peaks (log scale: 10^rangeMax)';
+            doc.beads.rangeMax = 'Maximum value considered for bead peaks (log scale: 10^rangeMax)';
             s.beads.rangeMax = 7;
-            doc.beads.binIncrement = 'Resolution of histogram bins used for finding bead peaks';
+            doc.beads.binIncrement = 'Resolution of histogram bins used for finding bead peaks (log10 scale)';
             s.beads.binIncrement = 0.02;
             doc.beads.beadModel = 'Model of beads that are being used. Should match an option in BeadCatalog.xlsx';
             s.beads.beadModel = 'SpheroTech RCP-30-5A';
@@ -150,55 +249,116 @@ classdef TASBEConfig
             doc.beads.visiblePlots = 'If true, bead unit calibration plots are visible; otherwise, they are hidden for later saving';
             s.beads.visiblePlots = [];
             defaults('beads.visiblePlots') = 'calibration.visiblePlots';
-            doc.calibration.plotPath = 'Location for bead unit calibration plots';
+            doc.beads.plotPath = 'Location for bead unit calibration plots';
             s.beads.plotPath = [];
             defaults('beads.plotPath') = 'calibration.plotPath';
-            doc.beads.graphPlotSize = 'Size (in inches) [X Y] for bead unit calibration figures';
+            doc.beads.plotSize = 'Size (in inches) [X Y] for bead unit calibration figures';
             s.beads.plotSize = [5 3.66];
             defaults('beads.plotSize') = 'calibration.graphPlotSize';
-            
-            % TASBE Setting migration
-            s.channel_template_file = '';           % An example of this is CM.BeadFile
-            
+            doc.beads.validateAllChannels = 'If true, check all channels for likely bead problems; otherwise, check only ERF channel';
+            s.beads.validateAllChannels = false;
+
+            % Size Beads (for forward scatter calibration)
+            s.sizebeads = struct(); doc.sizebeads = struct();
+            doc.sizebeads.about = 'Settings controlling the interpretation of size calibration beads';
+            doc.sizebeads.peakThreshold = 'Manual minimum threshold for size bead peaks; set automatically if empty';
+            s.sizebeads.peakThreshold = [];
+            doc.sizebeads.rangeMin = 'Minimum value considered for size bead peaks (log scale: 10^rangeMin)';
+            s.sizebeads.rangeMin = 2;
+            doc.beads.rangeMax = 'Maximum value considered for size bead peaks (log scale: 10^rangeMax)';
+            s.sizebeads.rangeMax = 7;
+            doc.sizebeads.binIncrement = 'Resolution of histogram bins used for finding size bead peaks (log10 scale)';
+            s.sizebeads.binIncrement = 0.02;
+            doc.sizebeads.beadModel = 'Model of size beads that are being used. Should match an option in BeadCatalog.xlsx';
+            s.sizebeads.beadModel = 'SpheroTech PPS-6K';
+            doc.sizebeads.beadChannel = 'Laser/filter channel being used, defaults to FSC. Should match an option in BeadCatalog.xlsx';
+            s.sizebeads.beadChannel = 'FSC';
+            doc.sizebeads.beadBatch = 'Batch of size beads that are being used. If set, should match an option in BeadCatalog.xlsx';
+            s.sizebeads.beadBatch = [];
+            doc.sizebeads.forceFirstPeak = 'If set to N, lowest observed size bead peak is forced to be interpreted as Nth peak';
+            s.sizebeads.forceFirstPeak = [];
+            doc.sizebeads.plot = 'When true, make diagnostic plots while computing size bead unit calibration';
+            s.sizebeads.plot = [];
+            defaults('sizebeads.plot') = 'calibration.plot';
+            doc.sizebeads.visiblePlots = 'If true, size bead unit calibration plots are visible; otherwise, they are hidden for later saving';
+            s.sizebeads.visiblePlots = [];
+            defaults('sizebeads.visiblePlots') = 'calibration.visiblePlots';
+            doc.sizebeads.plotPath = 'Location for size bead unit calibration plots';
+            s.sizebeads.plotPath = [];
+            defaults('sizebeads.plotPath') = 'calibration.plotPath';
+            doc.sizebeads.plotSize = 'Size (in inches) [X Y] for size bead unit calibration figures';
+            s.sizebeads.plotSize = [5 3.66];
+            defaults('sizebeads.plotSize') = 'calibration.graphPlotSize';
+
             % OutputSettings migration
+            doc.OutputSettings = struct();
+            doc.OutputSettings.about = 'Settings controlling batch plotting';
             s.OutputSettings = struct();
+            doc.OutputSettings.StemName = '';
             s.OutputSettings.StemName='';
+            doc.OutputSettings.DeviceName = '';
             s.OutputSettings.DeviceName='';
+            doc.OutputSettings.Description = '';
             s.OutputSettings.Description='';
-
+            
+            doc.OutputSettings.FixedInducerAxis = 'Set to fix limit [min max] of inducer count plot axis';
             s.OutputSettings.FixedInducerAxis = [];      % fixed -> [min max]
-            s.OutputSettings.FixedInputAxis =   [];      % fixed -> [min max]
-            s.OutputSettings.FixedNormalizedInputAxis =   [];      % fixed -> [min max]
-            s.OutputSettings.FixedOutputAxis =  [];      % fixed -> [min max]
-            s.OutputSettings.FixedNormalizedOutputAxis =  [];      % fixed -> [min max]
-            s.OutputSettings.FixedXAxis = [];             % fixed -> [min max]
-            s.OutputSettings.FixedYAxis = [];             % fixed -> [min max]
+            doc.OutputSettings.FixedHistogramAxis = 'Set to fix limit [min max] of histogram count plot axis';
+            s.OutputSettings.FixedHistogramAxis = [];
+            doc.OutputSettings.FixedBinningAxis = 'Set to fix limit [min max] of binning variable plot axis';
+            s.OutputSettings.FixedBinningAxis = [];
+            doc.OutputSettings.FixedInputAxis = 'Set to fix limit [min max] of input plot axis';
+            s.OutputSettings.FixedInputAxis =   [];
+            doc.OutputSettings.FixedNormalizedInputAxis = 'Set to fix limit [min max] of normalized input plot axis';
+            s.OutputSettings.FixedNormalizedInputAxis =   [];
+            doc.OutputSettings.FixedOutputAxis = 'Set to fix limit [min max] of output plot axis';
+            s.OutputSettings.FixedOutputAxis =  [];
+            doc.OutputSettings.FixedNormalizedOutputAxis = 'Set to fix limit [min max] of normalized output plot axis';
+            s.OutputSettings.FixedNormalizedOutputAxis =  [];
+            doc.OutputSettings.FixedRatioAxis = 'Set to fix limit [min max] of ratio plot axis';
+            s.OutputSettings.FixedRatioAxis =   [];
+            doc.OutputSettings.FixedSNRAxis = 'Set to fix limit [min max] of signal-to-noise ratio plot axis';
+            s.OutputSettings.FixedSNRAxis =   [];
+            doc.OutputSettings.FixedDeltaSNRAxis = 'Set to fix limit [min max] of delta signal-to-noise ratio plot axis';
+            s.OutputSettings.FixedDeltaSNRAxis =   [];
+            doc.OutputSettings.ColorPlots = 'If true, color plots created';
             s.OutputSettings.ColorPlots = true;
+            doc.OutputSettings.PlotPopulation = 'If true, population plots created';
             s.OutputSettings.PlotPopulation = true;
+            doc.OutputSettings.PlotNormalized = 'If true, normalized plots created';
             s.OutputSettings.PlotNormalized = true;
+            doc.OutputSettings.PlotNonnormalized = 'If true, nonnormalized plots created';
             s.OutputSettings.PlotNonnormalized = true;
+            doc.OutputSettings.PlotEveryN = 'If true, plots every N';
             s.OutputSettings.PlotEveryN = 1;
+            doc.OutputSettings.PlotTickMarks = 'If true, displays tick marks';
             s.OutputSettings.PlotTickMarks = false;
-            s.OutputSettings.FigureSize = [];
-            s.OutputSettings.csvfile = []; % may be either an fid or a string
+            doc.OutputSettings.FigureSize = 'Size (in inches) [X Y] for figures';
+            s.OutputSettings.FigureSize = [5 3.66];
+            doc.OutputSettings.csvfile = 'May be either a fid (file identifier) or a string';
+            s.OutputSettings.csvfile = []; 
             
+            % Plusminus preferences
+            s.plusminus = struct(); 
+            doc.plusminus = struct();
+            doc.plusminus.about = 'Settings controlling plusminus plotting preferences';
+            doc.plusminus.plotError = 'If true, plots error envelopes in plusminus comparison graphs';
+            s.plusminus.plotError = false;
             
-            % Color translation
-%             s.colortranslation = struct();
-%             s.colortranslation.rangeMin = 3;                % bin minimum (log10 scale), universal minimum trim
-%             s.colortranslation.rangeMax = 5.5;              % bin maximum (log10 scale)
-%             s.colortranslation.binIncrement = 0.1;          % resolution of binning
-%             s.colortranslation.minSamples = 100;            % How many samples are needed for a bin's data to be used?
-%             s.colortranslation.trimMinimum = {};            % If set, trims individual channels via {{Channel,log10(min)} ...}
-%             s.colortranslation.plot = [];                   % Should an autofluorescence plot be created?
-%             defaults('colortranslation.plot') = 'calibration.plot';
-%             s.colortranslation.visiblePlots = [];           % should autofluorescence plot be visible, or just created?
-%             defaults('colortranslation.visiblePlots') = 'calibration.visiblePlots';
-%             s.colortranslation.plotPath = [];               % where should autofluorescence plot go?
-%             defaults('colortranslation.plotPath') = 'calibration.plotPath';
-%             s.colortranslation.plotSize = [];               % What size (in inches) should autofluorescence plot be?
-%             defaults('colortranslation.plotSize') = 'calibration.heatmapPlotSize';
-
+            % Histogram preferences
+            s.histogram = struct(); 
+            doc.histogram = struct();
+            doc.histogram.about = 'Settings controlling histogram plotting preferences';
+            doc.histogram.displayLegend = 'If true, displays legend in bin statistics graphs';
+            s.histogram.displayLegend = true;
+            
+            % Excel wrapper preferences
+            s.template = struct();
+            doc.template = struct();
+            doc.template.about = 'Settings controlling excel wrapper preferences';
+            doc.template.displayErrors = 'If true, will display ALL of the TASBE warnings and errors from TemplateExtraction';
+            s.template.displayErrors = false;
+            
             % Last of all, bundle it in a cell array to return
             state = {s defaults doc};
         end
@@ -246,7 +406,7 @@ classdef TASBEConfig
                 return
             end
             
-            % Otherwise, go 
+            % Otherwise, go on to setting or getting
             if nargin<3, force = false; end
             
             keyseq = regexp(key, '\.', 'split');
@@ -266,6 +426,11 @@ classdef TASBEConfig
             end
             
             if ~isempty(value) || force
+                % warn if the key is not already in the field names
+                if ~ismember(keyseq{end},fieldnames(nest{end}))
+                    TASBESession.warn('TASBEConfig','UnknownSetting','Setting previously unknown configuration "%s"',key);
+                end
+                % set the value
                 nest{end}.(keyseq{end}) = value;
                 % propagate up the chain
                 for i=1:(numel(keyseq)-1)
@@ -297,7 +462,7 @@ classdef TASBEConfig
             out = TASBEConfig.setget(key,value);
         end
         
-        % Get a value for this key, not following its default chain. If not value is set, try to use the 2nd argument
+        % Get a value for this key, not following its default chain. If no value is set, try to use the 2nd argument
         function out = getexact(key,default)
             % try a get
             out = TASBEConfig.setget(key,[]);
@@ -306,7 +471,7 @@ classdef TASBEConfig
                 if nargin>=2
                     out = TASBEConfig.setget(key,default);
                 else
-                    error('Requested non-existing setting without default: %s',key);
+                    error('TASBEConfig', 'NoDefault', 'Requested non-existant setting without default: %s',key);
                 end
             end
         end
@@ -320,7 +485,7 @@ classdef TASBEConfig
                 catch e % ignore error and continue
                 end
             end
-            error('Couldn''t get any preference in sequence: %s',[varargin{:}]);
+            error('TASBEConfig', 'NoPreference', 'Couldn''t get any preference in sequence: %s',[varargin{:}]);
         end
         
         % Get a value for this key, possibly via default
@@ -337,7 +502,7 @@ classdef TASBEConfig
                     try
                         current = defaults(current);
                     catch e
-                        error('Couldn''t get any preference for: %s',key);
+                        error('TASBEConfig', 'NoPreference', 'Couldn''t get any preference for: %s',key);
                     end
                 end
             end
@@ -386,9 +551,20 @@ classdef TASBEConfig
             if(isstruct(val))
                 fieldnameset = fieldnames(val);
                 keydoc = '';
+                maxname = max(cellfun(@numel,fieldnameset));
                 for i = 1:numel(fieldnameset),
                     keydoc = [keydoc sprintf('\n  %s',fieldnameset{i})];
-                    if(isstruct(val.(fieldnameset{i}))), keydoc = [keydoc sprintf('    [family]')]; end;
+                    if(isstruct(val.(fieldnameset{i}))), 
+                        keydoc = [keydoc sprintf('\t\t[family]')]; 
+                    else
+                        try 
+                            about = doc.(fieldnameset{i}); 
+                            spacer = repmat(' ',1, 4 + maxname - numel(fieldnameset{i}));
+                            keydoc = [keydoc sprintf('%s%s',spacer,about)];
+                        catch e, 
+                            % leave it as was, without documentation
+                        end;
+                    end;
                 end
                 try about = doc.about; catch e, about = 'No documentation available'; end;
                 text = sprintf('Configuration family: %s\n%s\nKeys: %s',key,about,keydoc);
@@ -403,43 +579,25 @@ classdef TASBEConfig
         end
         
         % Transform all non-default settings into a JSON object
-        % refactor this all out into use of maps to/from JSON
-%         function string = to_json() 
-%             settings = TASBEConfig.list();
-%             fieldstring = TASBEConfig.struct_to_json_fields('', settings);
-%             trimmed = fieldstring(1:(end-3)); % trim off last ', \n'
-%             string = sprintf('{\n%s\n}',trimmed);
-%         end
-%         
-%         function string = struct_to_json_fields(prefix, struct)
-%             string = '';
-%             fields = fieldnames(struct);
-%             for i=1:numel(fields);
-%                 val = struct.(fields{i});
-%                 if(isstruct(val)), 
-%                     string = [string TASBEConfig.struct_to_json_fields([prefix fields{i} '.'], val)];
-%                 elseif isempty(val)
-%                     % continue
-%                 elseif islogical(val) %  boolean
-%                     if val, lvalue = 'true'; else lvalue = 'false'; end;
-%                     string = [string sprintf('"%s%s" : %s, \n',prefix,fields{i},lvalue)];
-%                 elseif isnumeric(val) % float
-%                     if(numel(val)==1),
-%                         string = [string sprintf('"%s%s" : %d, \n',prefix,fields{i},val)];
-%                     else
-%                         % TODO: figure out what to do for multi-dimensional arrays, if we have any
-%                         % Dammit, have to deal with infinities also
-%                         
-%                         valstr = '';
-%                         for j=1:numel(val), valstr = sprintf('%s%s, ',valstr,num2str(val(j))); end;
-%                         string = [string sprintf('"%s%s" : [%s], \n',prefix,fields{i},valstr(1:(end-2)))];
-%                     end
-%                 elseif isstr(val) % string
-%                     string = [string sprintf('"%s%s" : "%s", \n',prefix,fields{i},val)];
-%                 else
-%                     error('Don''t know how to serialize value of %s%s to JSON',prefix,fields{i});
-%                 end
-%             end
-%         end
+        function string = to_json()
+            string = savejson('',TASBEConfig.list());
+        end
+        
+        function load_from_json(string)
+            json_object = loadjson(string);
+            TASBEConfig.set_config_from_object('', json_object);
+        end
+        
+        function set_config_from_object(prefix, struct)
+            fields = fieldnames(struct);
+            for i=1:numel(fields);
+                value = struct.(fields{i});
+                if(isstruct(value)), % set with substructure
+                    TASBEConfig.set_config_from_object([prefix fields{i} '.'], value);
+                else % set this value
+                    TASBEConfig.set([prefix fields{i}], value);
+                end
+            end
+        end
     end
 end

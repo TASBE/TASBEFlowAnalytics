@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% get_channel_gmm_results is a getter function for the ExperimentResults
+% class, obtains the gaussian mixture model (population 'component') stats
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -8,8 +11,6 @@
 
 function [means stds weights stdofmeans stdofstds stdofweights] = get_channel_gmm_results(ER,name)
 % function [means stds weights stdofmeans stdofstds stdofweights] = get_channel_gmm_results(ER,name)
-% Obtain the gaussian mixture model (population 'component') stats
-
         channel = getChannel(ER.AnalysisParameters, name);
         which = indexof({ER.PopComponentMeans{:,1}},channel);
         means = ER.PopComponentMeans{which,2};

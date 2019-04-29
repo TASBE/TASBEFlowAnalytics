@@ -1,0 +1,23 @@
+{
+	"channels": [
+		{
+			"name": "FITC-A",
+			"print_name": "EYFP",
+			"unit": "MEFL"
+		},
+		{
+			"name": "PE-Tx-Red-YG-A",
+			"print_name": "mKate",
+			"unit": "MEFL"
+		},
+		{
+			"name": "Pacific Blue-A",
+			"print_name": "EBFP2",
+			"unit": "MEFL"
+		}
+	],
+	"filenames": [
+    "../TASBEFlowAnalytics-Tutorial/template_analysis/csv/LacI-CAGop_Dox01_PointCloud.csv"
+	]
+}
+

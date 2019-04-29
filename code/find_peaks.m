@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% FIND_PEAKS returns peak statistics (maxima, means, and counts) obtained
+% from bead histogram.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,7 +9,7 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-function [peak_maxima peak_means peak_counts] = find_peaks(bin_counts,bin_centers,peak_min_threshold,peak_ratio_threshold)
+function [peak_maxima, peak_means, peak_counts] = find_peaks(bin_counts,bin_centers,peak_min_threshold,peak_ratio_threshold)
 
 if nargin<4, peak_ratio_threshold = 2; end;
 if nargin<3, peak_min_threshold = 100; end;
@@ -36,10 +39,10 @@ end
 % minima = find(bin_counts(2:(end-1)) <= bin_counts(1:(end-2)) & bin_counts(2:(end-1)) < bin_counts(3:end));
 
 if(numel(maxima) == 0), 
-    warning('TASBE:FindPeaks','Problematic distribution: no peaks found in histogram'); 
+    TASBESession.warn('TASBE:FindPeaks','NoPeaksFound','Problematic distribution: no peaks found in histogram'); 
     maxima(1) = 1; bin_counts(1) = NaN;% put in fake data
 end;
-if(abs(numel(maxima)-numel(minima))>1), error('Internal error: impossible distribution of %i maxima and %i minima',numel(maxima),numel(minima)); end;
+if(abs(numel(maxima)-numel(minima))>1), TASBESession.error('TASBE:FindPeaks','ImpossibleDistribution','Internal error: impossible distribution of %i maxima and %i minima',numel(maxima),numel(minima)); end;
 
 % enhance with first/last minima to get minima surrounding each maximum
 if(numel(minima)==0 || minima(1)>maxima(1)), minima = [1 minima]; end;

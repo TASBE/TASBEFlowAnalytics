@@ -1,4 +1,6 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% ERF_CHANNEL_AU_TO_ERF converts ERF channel arbitrary units into standard ERF units
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -7,5 +9,4 @@
 % package distribution's top directory.
     
 function ERF = ERF_channel_AU_to_ERF(UT, data)
-  % Converts ERF channel arbitrary units into standard ERF units
   ERF = UT.k_ERF * data;

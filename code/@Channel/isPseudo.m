@@ -1,4 +1,6 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% isPseudo determines whether an inputted Channel object is pseudo (controls are not correct, but data is being used anyway). 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed

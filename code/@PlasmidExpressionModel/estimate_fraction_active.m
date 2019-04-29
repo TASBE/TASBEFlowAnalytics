@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+% ESTIMATE_FRACTION_ACTIVE computes the fraction of active cells in a data
+% sample for a PlasmidExpressionModel object.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -9,7 +12,7 @@
 function active = estimate_fraction_active(PEM,ERFs)
     active = zeros(size(ERFs));
     if numel(PEM.fraction_active)<2
-        warning('TASBE:Analysis','Cannot compute fraction active: distribution did not fit bimodal gaussian');
+        TASBESession.warn('TASBE:PEM','NotBimodalGaussian','Cannot compute fraction active: distribution did not fit bimodal gaussian');
         return
     end
     for i=1:numel(ERFs)

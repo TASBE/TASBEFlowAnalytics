@@ -1,15 +1,6 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
-% in the AUTHORS file in TASBE analytics package distribution's top directory.
-%
-% This file is part of the TASBE analytics package, and is distributed
-% under the terms of the GNU General Public License, with a linking
-% exception, as described in the file LICENSE in the TASBE analytics
-% package distribution's top directory.
-
-% EXPERIMENTRESULTS Summarizes the results of the experiment across all
-% induction conditions and replications
+% EXPERIMENTRESULTS summarizes the results of the experiment across all
+% induction conditions and replications, contains the following properties:
 %   
-%  
 %         Experiment              % handle to object, which includes induction conditions
 %         AnalysisParameters      % handle to object which was used for producing these results
 %         % Means across all replications
@@ -41,6 +32,18 @@
 %         StdOfPopComponentMeans      % table of {Channel,n_components x n_inductions}
 %         StdOfPopComponentStandardDevs % table of {Channel,n_components x n_inductions}
 %         StdOfPopComponentWeights    % table of {Channel,n_components x n_inductions}
+%         on_fracMean                 % arithmetic mean of frac of points in on group between replicates (determined by threshold)
+%         off_fracMean                % arithmetic mean of frac of points in off group between replicates (determined by threshold)
+%         on_fracStd                 % arithmetic std of frac of points in on group between replicates (determined by threshold)
+%         off_fracStd                % arithmetic std of frac of points in off group between replicates (determined by threshold)
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
+% in the AUTHORS file in TASBE analytics package distribution's top directory.
+%
+% This file is part of the TASBE analytics package, and is distributed
+% under the terms of the GNU General Public License, with a linking
+% exception, as described in the file LICENSE in the TASBE analytics
+% package distribution's top directory.
 
 function ER = ExperimentResults(Exp, AP, ReplicateCounts, BinCounts, ...
                         Means, StandardDevs, PlasmidEstimates, FractionActive, ...
@@ -48,7 +51,7 @@ function ER = ExperimentResults(Exp, AP, ReplicateCounts, BinCounts, ...
                         PopComponentMeans, PopComponentStandardDevs, PopComponentWeights, ...
                         StdOfMeans, StdOfStandardDevs, StdOfPlasmidEstimates, StdOfFractionActive, ...
                         StdOfPopMeans, StdOfPopStandardDevs, StdOfHistograms, StdOfExcluded, StdOfNonExpressing, ...
-                        StdOfPopComponentMeans, StdOfPopComponentStandardDevs, StdOfPopComponentWeights)
+                        StdOfPopComponentMeans, StdOfPopComponentStandardDevs, StdOfPopComponentWeights, on_fracMean, off_fracMean, on_fracStd, off_fracStd)
                 ER.version = tasbe_version();
             ER.Experiment = Experiment();
                 ER.AnalysisParameters = AnalysisParameters();
@@ -110,6 +113,12 @@ function ER = ExperimentResults(Exp, AP, ReplicateCounts, BinCounts, ...
                 ER.StdOfPopComponentMeans = StdOfPopComponentMeans;
                 ER.StdOfPopComponentStandardDevs = StdOfPopComponentStandardDevs;
                 ER.StdOfPopComponentWeights = StdOfPopComponentWeights;
+                if nargin > 28
+                    ER.on_fracMean = on_fracMean;
+                    ER.off_fracMean = off_fracMean;
+                    ER.on_fracStd = on_fracStd;
+                    ER.off_fracStd = off_fracStd;
+                end
             end
             
             ER=class(ER,'ExperimentResults');

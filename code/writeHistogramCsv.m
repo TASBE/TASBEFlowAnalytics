@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% WRITEHISTOGRAMCSV outputs the histogramFile with bin center and bin count
+% data from batch analysis.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,49 +9,60 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-function histogramFile = writeHistogramCsv(channels, sampleIds, sampleresults, binCenters, units)
-    baseName = sanitize_filename(TASBEConfig.get('OutputSettings.StemName'));
+function histogramFile = writeHistogramCsv(channels, sampleIds, sampleresults, binCenters)
+    if TASBEConfig.get('flow.outputHistogramFile')
+        baseName = sanitize_filename(TASBEConfig.get('OutputSettings.StemName'));
 
-    % First create the default output filename.
-    histogramFile = [baseName '_histogramFile.csv'];
-    
-    numConditions = numel(sampleIds);
-    replicates = zeros(numConditions, 1);
-    numBinsPerChannel = numel(binCenters);
-    
-    % Pull histogram data out of sample results.
-    binCounts = cell(numConditions, 1);
-    for i=1:numConditions
-        replicates(i) = numel(sampleresults{i});
-        binCounts{i} = cell(1,replicates(i));
-        for j=1:replicates(i)
-            binCounts{i}{j} = sampleresults{i}{j}.BinCounts;
+        path = TASBEConfig.get('flow.dataCSVPath');
+        path = end_with_slash(path);
+        if ~isdir(path)
+            TASBESession.notify('TASBE:Utilities','MakeDirectory','Directory does not exist, attempting to create it: %s',path);
+            mkdir(path);
         end
-    end
-    
-    columnNames = buildDefaultHistFileHeader(channels, units);
-    numColumns = numel(columnNames);
-    totalReplicates = sum(replicates);
-    
-    histTable = cell(totalReplicates*numBinsPerChannel+1, numColumns);
-    histTable(1, 1:numColumns) = columnNames;
-    endingRow = 1;  % Because the column labels are in the first row.
-    
-    for i=1:numConditions
-        startingRow = endingRow + 1;
-        endingRow = startingRow + replicates(i)*numBinsPerChannel - 1;
-        histTable(startingRow:endingRow,1:numColumns) = formatDataPerSample(channels, sampleIds{i}, binCenters, binCounts{i});
-    end
-    
-    % Needed to add column names when I created the tables due to conflicts
-    % with the default names.  For a table, the column names must be valid
-    % matlab variable names so I filtered out spaces and hypens and
-    % replaced them with underscores.
-    if (is_octave)
-        cell2csv(histogramFile, histTable);
+
+        % First create the default output filename.
+        histogramFile = [path baseName '_histogramFile.csv'];
+
+        numConditions = numel(sampleIds);
+        replicates = zeros(numConditions, 1);
+        numBinsPerChannel = numel(binCenters);
+
+        % Pull histogram data out of sample results.
+        binCounts = cell(numConditions, 1);
+        for i=1:numConditions
+            replicates(i) = numel(sampleresults{i});
+            binCounts{i} = cell(1,replicates(i));
+            for j=1:replicates(i)
+                binCounts{i}{j} = sampleresults{i}{j}.BinCounts;
+            end
+        end
+
+        columnNames = buildDefaultHistFileHeader(channels);
+        numColumns = numel(columnNames);
+        totalReplicates = sum(replicates);
+
+        histTable = cell(totalReplicates*numBinsPerChannel+1, numColumns);
+        histTable(1, 1:numColumns) = columnNames;
+        endingRow = 1;  % Because the column labels are in the first row.
+
+        for i=1:numConditions
+            startingRow = endingRow + 1;
+            endingRow = startingRow + replicates(i)*numBinsPerChannel - 1;
+            histTable(startingRow:endingRow,1:numColumns) = formatDataPerSample(channels, sampleIds{i}, limitPrecision(binCenters,4), binCounts{i});
+        end
+
+        % Needed to add column names when I created the tables due to conflicts
+        % with the default names.  For a table, the column names must be valid
+        % matlab variable names so I filtered out spaces and hypens and
+        % replaced them with underscores.
+        if (is_octave)
+            cell2csv(histogramFile, histTable);
+        else
+            t = table(histTable);
+            writetable(t, histogramFile, 'WriteVariableNames', false);
+        end
     else
-        t = table(histTable);
-        writetable(t, histogramFile, 'WriteVariableNames', false);
+        histogramFile = 'none';
     end
         
 end
@@ -92,18 +106,18 @@ function perSampleTable = formatDataPerSample(channels, sampleId, binCenters, co
     perSampleTable = [sampleIdPadded, num2cell(binCentersForAllReplicates), num2cell(binCounts)];
 end
 
-function fileHeader = buildDefaultHistFileHeader(channels, units)
+function fileHeader = buildDefaultHistFileHeader(channels)
     % Default file header to match the default file format.
     numChannels = numel(channels);
     binHeaders = cell(1,numChannels);
     
     % Not elegant, but it gets the job done.
     for i=1:numChannels
-        channelName = [getPrintName(channels{i}) '_' units];
+        channelName = [getPrintName(channels{i}) '_' getUnits(channels{i})];
         binHeaders{i} = sanitizeColumnName(['BinCount_' channelName]);
     end
     
     % Don't separate with commas. We want all the column names in a cell
     % array so we can pass them to a table.
-    fileHeader = {'ID', 'BinCenters', binHeaders{:}};
+    fileHeader = {'Id', 'BinCenters', binHeaders{:}};
 end

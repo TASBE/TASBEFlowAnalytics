@@ -1,0 +1,25 @@
+{
+	"channels": [
+		{
+			"name": "FITC-A",
+			"print_name": "EYFP",
+			"unit": "a.u.",
+            "extra_field": "bar"
+		},
+		{
+			"name": "PE-Tx-Red-YG-A",
+			"print_name": "mKate"
+		},
+		{
+			"print_name": "EBFP2",
+			"unit": "a.u."
+		},
+		{
+			"name": "NoChannel",
+			"unit": "a.u."
+		}
+	],
+	"filenames": [
+	]
+}
+

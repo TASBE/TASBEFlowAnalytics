@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% APPLYFILTER overrides applyFilter method in Filter class. Corresponds to
+% a TimeFilter object, excludes data that occurred before a certain time threshold.
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -19,7 +22,7 @@ for j=1:numel(fcshdr.par)
     end
 end
 if(~found), 
-    warning('Model:Time','Could not find Time channel'); 
+    TASBESession.warn('TASBE:TimeFilter','NoTimeChannel','Could not find Time channel'); 
     data = rawfcs;
 else
     not_early = timechannel>TF.early_data_exclusion;

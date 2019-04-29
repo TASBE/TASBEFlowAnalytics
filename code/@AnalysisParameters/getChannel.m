@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% getChannel returns channel with given an inputted AnalysisParameter and
+% channel name
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -9,9 +12,9 @@
 function channel = getChannel(AP, name)
     channel_id = find(strcmp(AP.ChannelLabels(:,1),name));
     if(numel(channel_id)>1)
-        error('Analysis specifies multiple "%s" channels',name);
+        TASBESession.error('TASBE:ColorModel','DuplicateChannels','Analysis specifies multiple "%s" channels',name);
     end
     if(numel(channel_id)==0)
-        error('Analysis does not specify a "%s" channel',name);
+        TASBESession.error('TASBE:ColorModel','MissingChannel','Analysis does not specify a "%s" channel',name);
     end
     channel = AP.ChannelLabels{channel_id,2};

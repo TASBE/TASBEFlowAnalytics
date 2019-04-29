@@ -1,9 +1,8 @@
-function [data figh] = cm_scatter(CM,filename,xcolor,ycolor,ERF,density,range,visible,largeoutliers)
-% FCS_SCATTER(filename,xcolor,ycolor,density,range,visible): 
+% CM_SCATTER(datafile,xcolor,ycolor,density,range,visible): 
 %   Plot a log-log scatter graph of positive points in FCS file
 %   Defaults to non-visible, density 10, range = []
-
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -11,13 +10,17 @@ function [data figh] = cm_scatter(CM,filename,xcolor,ycolor,ERF,density,range,vi
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
+function [data, figh] = cm_scatter(CM,datafile,xcolor,ycolor,ERF,density,range,visible,largeoutliers)
 if nargin < 8, visible = false; end;
 if nargin < 9, largeoutliers = false; end;
 
+plotSize = TASBEConfig.get('plots.heatmapPlotSize');
+
+datafile = ensureDataFile(datafile);
 if ERF,
-    data = readfcs_compensated_ERF(CM,strtrim(filename),false,false);
+    data = readfcs_compensated_ERF(CM,datafile,false,false);
 else
-    data = readfcs_compensated_au(CM,strtrim(filename),false,false);
+    data = readfcs_compensated_au(CM,datafile,false,false);
 end
 
 xchan = channel_named(CM,xcolor);
@@ -26,14 +29,14 @@ xc = data(:,find(CM,xchan));
 yc = data(:,find(CM,ychan));
 
 if nargin >= 6 && density
-    h = figure('PaperPosition',[1 1 5 5]);
+    h = figure('PaperPosition',[1 1 plotSize]);
     if ~visible, set(h,'visible','off'); end;
-    pos = xc>=1e7 & yc>=1;
+    pos = xc>=1 & yc>=1;
     if nargin < 7, range = []; end;
     if density > 1, type = 'contour'; else type = 'image'; end
     smoothhist2D(log10([xc(pos) yc(pos)]),10,[200, 200],[],type,range,largeoutliers);
 else
-    h = figure('PaperPosition',[1 1 5 5]);
+    h = figure('PaperPosition',[1 1 plotSize]);
     if ~visible, set(h,'visible','off'); end;
     pos = xc>=1 & yc>=1;
     loglog(xc(pos),yc(pos),'.','MarkerSize',1);
@@ -44,7 +47,7 @@ if ERF
 else
     xlabel(clean_for_latex(['log_{10} ' xcolor ' a.u.'])); ylabel(clean_for_latex(['log_{10} ' ycolor ' a.u.']));
 end
-title(clean_for_latex(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,filename)));
+title(clean_for_latex(sprintf('Scatter of %s vs. %s for %s',xcolor,ycolor,getFile(datafile))));
 
 data = [xc yc];
 figh = h;

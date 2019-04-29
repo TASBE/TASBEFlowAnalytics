@@ -1,12 +1,11 @@
-function [b,b_err] = make_linear_compensation_model(CM, filename, driven, passive)
-%MAKE_LINEAR COMPENSATION_MODEL: create a color compensation model from 
+% MAKE_LINEAR COMPENSATION_MODEL: create a color compensation model from 
 %   FCS data under the assumption that interference is all linear bleed
 %   plus autofluorescence (an assumption that typically holds well):
 %      passive = b*driven + autofluorescence
 %   returns b and the error in the estimate (expressed as a multiple,
 %   since estimation is done on the log scale)
-
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -14,6 +13,7 @@ function [b,b_err] = make_linear_compensation_model(CM, filename, driven, passiv
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
+function [b,b_err] = make_linear_compensation_model(CM, filename, driven, passive)
 flowMin = TASBEConfig.get('flow.rangeMin');
 flowMax = TASBEConfig.get('flow.rangeMax');
 minDrivenThreshold = TASBEConfig.get('compensation.minimumDrivenLevel');
@@ -23,11 +23,10 @@ maxDrivenThreshold = TASBEConfig.get('compensation.maximumDrivenLevel');
 [rawfcs fcshdr] = read_filtered_au(CM,filename);
 
 rawdata = select_channels(CM.Channels,rawfcs,fcshdr);
-% Remove autofluorescence
+% Remove autofluorescence from selected channels (ignoring others that may be unprocessed)
 no_AF_data = zeros(size(rawdata));
-for i=1:numel(CM.Channels)
-    no_AF_data(:,i) = rawdata(:,i)-getMean(CM.autofluorescence_model{i});
-end
+no_AF_data(:,driven) = rawdata(:,driven)-getMean(CM.autofluorescence_model{driven});
+no_AF_data(:,passive) = rawdata(:,passive)-getMean(CM.autofluorescence_model{passive});
 % make sure nothing's below 1, for compensation and geometric statistics
 % (compensation can be badly thrown off by negative values)
 no_AF_data(no_AF_data<1) = 1;
@@ -59,12 +58,13 @@ else
     b_err = 1; % no significant error
 end
 if b>0.1
-    warning('Model:Color','Spectral bleed from %s to %s more than 10%%: %0.3f',getPrintName(CM.Channels{driven}),getPrintName(CM.Channels{passive}),b);
+    TASBESession.warn('TASBE:CompensationModel','HighSpectralBleed','Spectral bleed from %s to %s more than 10%%: %0.3f',getPrintName(CM.Channels{driven}),getPrintName(CM.Channels{passive}),b);
 end
 
 % Optional plot
-if CM.compensation_plot
-    h = figure('PaperPosition',[1 1 6 4]);
+if TASBEConfig.get('compensation.plot')
+    figsize = TASBEConfig.get('compensation.plotSize');
+    h = figure('PaperPosition',[1 1 figsize]);
     set(h,'visible','off');
     pos = no_AF_data(:,driven)>1 & no_AF_data(:,passive)>1;
     smoothhist2D(log10([no_AF_data(pos,driven) no_AF_data(pos,passive)]),10,[200, 200],[], [],[flowMin flowMin; flowMax flowMax]); hold on;

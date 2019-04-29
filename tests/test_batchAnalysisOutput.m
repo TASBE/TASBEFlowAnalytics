@@ -10,8 +10,9 @@ function test_batchAnalysisEndtoend
 
 TASBEConfig.set('flow.outputPointCloud','true');
 TASBEConfig.set('flow.pointCloudPath','/tmp/CSV/');
+TASBEConfig.set('flow.onThreshold', 10^4);
 
-load('../TASBEFlowAnalytics-Tutorial/template_colormodel/CM120312.mat');
+CM = load_or_make_testing_colormodel();
 stem1011 = '../TASBEFlowAnalytics-Tutorial/example_assay/LacI-CAGop_';
 
 % set up metadata
@@ -35,9 +36,9 @@ AP=setUseAutoFluorescence(AP,false');
 
 % Make a map of condition names to file sets
 file_pairs = {...
-  'Dox 0.1/0.2',    {[stem1011 'B3_B03_P3.fcs'], [stem1011 'B4_B04_P3.fcs']}; % Replicates go here, e.g., {[rep1], [rep2], [rep3]}
-  'Dox 0.5/1.0',    {[stem1011 'B5_B05_P3.fcs'], [stem1011 'B6_B06_P3.fcs']};
-  'Dox 2.0/5.0',    {[stem1011 'B7_B07_P3.fcs'], [stem1011 'B8_B08_P3.fcs']};
+  'Dox 0.1/0.2',    {DataFile('fcs', [stem1011 'B3_P3.fcs']), DataFile('fcs', [stem1011 'B4_P3.fcs'])}; % Replicates go here, e.g., {[rep1], [rep2], [rep3]}
+  'Dox 0.5/1.0',    {DataFile('fcs', [stem1011 'B5_P3.fcs']), DataFile('fcs', [stem1011 'B6_P3.fcs'])};
+  'Dox 2.0/5.0',    {DataFile('fcs', [stem1011 'B7_P3.fcs']), DataFile('fcs', [stem1011 'B8_P3.fcs'])};
 % Remove these to let it be faster:
 %  'Dox 10.0/20.0',   {[stem1011 'B9_B09_P3.fcs'], [stem1011 'B10_B10_P3.fcs']};
 %  'Dox 50.0/100.0',   {[stem1011 'B11_B11_P3.fcs'], [stem1011 'B12_B12_P3.fcs']};
@@ -48,13 +49,18 @@ file_pairs = {...
 n_conditions = size(file_pairs,1);
 
 % Execute the actual analysis
+TASBEConfig.set('OutputSettings.StemName','LacI-CAGop');
 [results, sampleresults] = per_color_constitutive_analysis(CM,file_pairs,{'EBFP2','EYFP','mKate'},AP);
 
 % Make output plots
-TASBEConfig.set('OutputSettings.StemName','LacI-CAGop');
 TASBEConfig.set('plots.plotPath','/tmp/plots');
 TASBEConfig.set('OutputSettings.FixedInputAxis',[1e4 1e10]);
-plot_batch_histograms(results,sampleresults,{'b','y','r'},CM);
+plot_batch_histograms(results,sampleresults,CM,{'b','y','r'});
+
+% Make output plots without linespecs
+TASBEConfig.set('plots.plotPath','/tmp/plots2');
+TASBEConfig.set('OutputSettings.FixedInputAxis',[1e4 1e10]);
+plot_batch_histograms(results,sampleresults,CM);
 
 save('/tmp/LacI-CAGop-batch.mat','AP','bins','file_pairs','results','sampleresults');
 
@@ -79,6 +85,17 @@ end
 % Split the stats table
 geoMeans = statsCell(:,5:7);
 geoStdDevs = statsCell(:,8:10);
+gmmMeans = statsCell(:,11:16);
+gmmStds = statsCell(:,17:22);
+gmmWeights = statsCell(:,23:28);
+onFracs = statsCell(:,29);
+offFracs = statsCell(:,30);
+
+% Check on/off frac mean and std values
+assertElementsAlmostEqual(round(results{1}.on_fracMean.*10000)./10000, 0.5791, 'relative', 1e-2);
+assertElementsAlmostEqual(round(results{1}.off_fracMean.*10000)./10000, 0.4209, 'relative', 1e-2);
+assertElementsAlmostEqual(round(results{1}.on_fracStd.*10000)./10000, 0.0038, 'relative', 1e-2);
+assertElementsAlmostEqual(round(results{1}.off_fracStd.*10000)./10000, 0.0038, 'relative', 1e-2);
 
 % Split the hist table
 binCounts = histCell(:,3:5);
@@ -94,7 +111,7 @@ sampleIDs = sampleIDListWithPadding(find(~cellfun(@isempty,sampleIDListWithPaddi
 % The first five rows should be enough to verify writing the histogram file
 % correctly.
 expected_bincounts = [...
-        6799        2200        1383;
+        6799         637          36; % clipped by the drop threshold
         8012        2732        2696;
         8780        3327        2638;
         8563        4637        2632;
@@ -102,41 +119,70 @@ expected_bincounts = [...
         ];
        
 % Means and stddevs tests writing the statistics file correctly.
-expected_means = 1e5 * [...
-    0.2217    2.4948    4.1064
-    0.2219    2.4891    4.0757
-    0.2211    2.5766    4.2599
-    0.2205    2.5874    4.3344
-    0.2216    2.5099    4.3095
-    0.2255    2.4862    4.2764
-    0.2281    2.5457    4.2586
-    0.2539    2.5739    4.4073
-    0.3791    2.4218    4.6213
-    0.4891    2.3266    4.7217
-    0.6924    2.1068    4.6593
-    1.0930    1.7513    5.6729
-    1.5909    1.5451    6.7144
-    1.9472    1.4175    7.4609
+expected_means = [...
+    22170	260800	429100
+    22200	260700	426500
+    22110	269300	444900
+    22050	271400	454400
+    22160	262600	450600
+    22550	260800	448200
+    22820	266800	445000
+    25400	268800	460800
+    37920	253000	482200
+    48930	242800	492200
+    69260	220000	486300
+    109400	182500	592500
+    159100	160100	697900
+    194800	146800	772000
     ];
 
 expected_stds = [...
-    1.6006    6.7653    8.1000
-    1.5990    6.8670    8.1306
-    1.5981    6.8650    8.1230
-    1.6036    6.9155    8.2135
-    1.6035    6.7565    8.1069
-    1.6427    6.8020    8.2742
-    1.7030    6.7618    8.1220
-    1.9914    6.7701    8.2937
-    3.0568    6.4579    8.4052
-    3.6868    6.1704    8.4187
-    4.5068    5.8686    8.2393
-    5.2819    5.2780    8.7369
-    5.6018    4.7061    8.5892
-    5.5773    4.3900    8.4391
+    1.601	6.611	7.921
+    1.600	6.702	7.942
+    1.599	6.710	7.944
+    1.603	6.746	8.014
+    1.604	6.599	7.922
+    1.643	6.641	8.080
+    1.703	6.595	7.936
+    1.992	6.613	8.106
+    3.057	6.308	8.224
+    3.688	6.028	8.242
+    4.508	5.731	8.056
+    5.283	5.163	8.538
+    5.603	4.613	8.392
+    5.578	4.301	8.263
     ];
 
+expected_gmm_means = 10.^[...
+    4.2543    4.2543    4.6200    5.9921    4.6817    6.0832; % row 1
+    ];
 
+expected_gmm_stds = 10.^[...
+    0.0692    0.0692    0.0783    0.3112    0.0900    0.5154; % row 1
+    ];
+
+expected_gmm_weights = [...
+    0.5000    0.5000    0.4195    0.5805    0.3215    0.6785; % row 1
+    ];
+
+expected_on_fracs = [...
+    0.5818
+    0.5764
+    0.5793
+    0.5770
+    0.5815
+    0.5838
+    ];
+
+expected_off_fracs = [...
+    0.4182
+    0.4236
+    0.4207
+    0.4230
+    0.4185
+    0.4162
+    ];
+    
 assertEqual(numel(sampleIDs), 3);
 %assertEqual(numel(sampleIDs), 7);
 
@@ -146,13 +192,20 @@ assertEqual(sampleIDs{3}, 'Dox 2.0/5.0');
 %assertEqual(sampleIDs{7}, 'Dox 1000.0/2000.0');
 
 % spot-check first five rows of binCounts
-assertElementsAlmostEqual(cell2mat(binCounts(1:5,:)), expected_bincounts, 'relative', 1e-2);
+assertElementsAlmostEqual(cell2mat(binCounts(1:5,:)), expected_bincounts, 'relative', 2e-2);
 
 % spot-check geo means and geo std devs.
 for i=1:6, % was 7
     assertElementsAlmostEqual(cell2mat(geoMeans(i,:)), expected_means(i,:), 'relative', 1e-2);
     assertElementsAlmostEqual(cell2mat(geoStdDevs(i,:)), expected_stds(i,:),  'relative', 1e-2);
 end
+
+% spot check Gaussian Mixture Model materials:
+assertElementsAlmostEqual(cell2mat(gmmMeans(1,:)), expected_gmm_means, 'relative', 1e-2);
+assertElementsAlmostEqual(cell2mat(gmmStds(1,:)), expected_gmm_stds, 'relative', 1e-2);
+assertElementsAlmostEqual(cell2mat(gmmWeights(1,:)), expected_gmm_weights, 'relative', 1e-2);
+assertElementsAlmostEqual(cell2mat(onFracs), expected_on_fracs, 'relative', 1e-2);
+assertElementsAlmostEqual(cell2mat(offFracs), expected_off_fracs, 'relative', 1e-2);
 
 % Check the first five rows of the first point cloud file
 expected_pointCloud = [...
@@ -164,7 +217,7 @@ expected_pointCloud = [...
     ];
 
 % The first point cloud file: /tmp/LacI-CAGop_B3_B03_P3_PointCloud.csv
-firstPointCloudFile = '/tmp/CSV/LacI-CAGop_B3_B03_P3_PointCloud.csv';
+firstPointCloudFile = '/tmp/CSV/LacI-CAGop_B3_P3_PointCloud.csv';
 
 % Read the point cloud into matlab tables
 if (is_octave)

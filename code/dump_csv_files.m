@@ -1,9 +1,8 @@
-function dump_csv_files(filestem, results)
 % DUMP_CSV_FILES: Turn some of the key experiment results into
 %    comma-separated-value files, which are easy for biologists
 %    to pull into Excel and play with.
-
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed 
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -11,7 +10,7 @@ function dump_csv_files(filestem, results)
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-
+function dump_csv_files(filestem, results)
 % Get Inductions
 experiment = getExperiment(results);
 inductions = getInducerLevelsToFiles(experiment,1);

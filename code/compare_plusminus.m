@@ -1,12 +1,3 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
-% in the AUTHORS file in TASBE analytics package distribution's top directory.
-%
-% This file is part of the TASBE analytics package, and is distributed
-% under the terms of the GNU General Public License, with a linking
-% exception, as described in the file LICENSE in the TASBE analytics
-% package distribution's top directory.
-
-function pm_results = compare_plusminus(p_results,m_results,no_input)
 % COMPARE_PLUSMINUS(p_results,m_results,no_input)
 %    p_results and m_results are the ExperimentResults from the positive and negative conditions
 %    if 'no_input' (optional) is set, then the input value will be set uniformly to the induction level
@@ -15,7 +6,16 @@ function pm_results = compare_plusminus(p_results,m_results,no_input)
 %    bincounts is a [bins x inductions x 2] array of bin counts for +, -
 %    ratios is a [bins x inductions] array of +/- ratio
 %    ostds, ostdofmeans are variances and variances of omeans
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
+% in the AUTHORS file in TASBE analytics package distribution's top directory.
+%
+% This file is part of the TASBE analytics package, and is distributed
+% under the terms of the GNU General Public License, with a linking
+% exception, as described in the file LICENSE in the TASBE analytics
+% package distribution's top directory.
 
+function pm_results = compare_plusminus(p_results,m_results,no_input)
 if(nargin<3), no_input = 0; end; % default to input, not only inducer
 
 % Ensure results are comparable
@@ -29,7 +29,7 @@ m_inductions = getInducerLevelsToFiles(getExperiment(m_results),1);
 if ((get_n_bins(p_bins) ~= get_n_bins(m_bins)) || ...
     numel(find(get_bin_edges(p_bins) ~= get_bin_edges(m_bins))) || ...
     numel(find(p_inductions ~= m_inductions)))
-    error('Plus/Minus experiment cannot compare datasets with differen inductions or bins');
+    TASBESession.error('TASBE:Analysis','PlusMinusMismatch','Plus/Minus experiment cannot compare datasets with different inductions or bins');
 end
 
 n_bins = get_n_bins(p_bins);

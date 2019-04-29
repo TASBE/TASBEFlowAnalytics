@@ -70,8 +70,8 @@ obj.DiagonalCovariance = [];        % bool summary of 'CovarianceType'
 
 if nargin>0 
     % Construction
-    p = [];
-    extra = [];
+    if nargin<3, p = []; end;
+    if nargin<4, extra = []; end;
     obj.DistributionName = 'gaussian mixture distribution';
     obj.mu = mu;
     obj.Sigma = sigma;

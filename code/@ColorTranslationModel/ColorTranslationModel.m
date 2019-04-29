@@ -1,4 +1,8 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% Constructor for the ColorTranslationModel class with properties: 
+%  Channels        % array of Channel objects
+%  scales          % Channel x Channel scalars: Color_j = scales(i,j)*Color_i
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,8 +10,6 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-%  Channels        % array of Channel objects
-%  scales          % Channel x Channel scalars: Color_j = scales(i,j)*Color_i
 function CTM = ColorTranslationModel(channels, scales)
     if nargin == 0
         channels{1} = Channel();

@@ -1,4 +1,9 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% Constructor of NoiseModel structure with the following properties:
+% noisemin    % array of min noise/channel (which is typically the highest)
+% noisemean   % array of std noise/channel
+% noisestd    % array of noise std/channel (for checking validity)
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -6,9 +11,6 @@
 % exception, as described in the file LICENSE in the TASBE analytics
 % package distribution's top directory.
 
-% noisemin    % array of min noise/channel (which is typically the highest)
-% noisemean   % array of std noise/channel
-% noisestd    % array of noise std/channel (for checking validity)
 function NM = NoiseModel(mins, means, stds, detailcounts, detailmeans, detailstds)
   NM.noisemin = mins;
   NM.noisemean = means;

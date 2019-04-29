@@ -18,7 +18,7 @@ function directories_added=tasbe_set_path()
 
     root_dir=fileparts(mfilename('fullpath'));
 
-    sub_dirs={'code'}; % Add directories here as needed
+    sub_dirs={'code', 'code/utils', 'library_code', 'library_code/jsonlab'}; % Add directories here as needed
     
     % Check if it's Octave; if not, assume matlab
     v = ver();

@@ -1,4 +1,7 @@
-% Copyright (C) 2010-2017, Raytheon BBN Technologies and contributors listed
+% DIRECTORY_TO_SAMPLE_SET returns a set of sample FCS files from inputted
+% directory 
+%
+% Copyright (C) 2010-2018, Raytheon BBN Technologies and contributors listed
 % in the AUTHORS file in TASBE analytics package distribution's top directory.
 %
 % This file is part of the TASBE analytics package, and is distributed
@@ -28,5 +31,5 @@ for i=1:numel(fileset),
     set{end,2} = { [directory '/' fileset(i).name] };
 end
 if numel(set)==0,
-    warn('Warning: no FCS files found in directory: %s',directory);
+    TASBESession.warn('TASBE:Utilities','NoFilesFound','Warning: no FCS files found in directory: %s',directory);
 end
