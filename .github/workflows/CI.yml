@@ -11,19 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: TASBE/TASBEFlowAnalytics-Tutorial
-          path: TASBEFlowAnalytics-Tutorial
+          path: TASBEFlowAnalytics
       - uses: actions/checkout@v2
         with:
-          path: TASBEFlowAnalytics
-      - name: Setup octave
-        run: |
-          sudo apt-get -y -qq install octave liboctave-dev
-          cd /home/runner/work/TASBEFlowAnalytics/TASBEFlowAnalytics/TASBEFlowAnalytics
-          octave --no-gui --quiet --eval "pkg install matlab_compat/io-2.4.10.tar.gz"
-          git clone https://github.com/MOxUnit/MOxUnit.git
-          make -C MOxUnit install
-      - name: Run tests
-        run: |
-          cd /home/runner/work/TASBEFlowAnalytics/TASBEFlowAnalytics/TASBEFlowAnalytics
-          make test          
+          repository: TASBE/TASBEFlowAnalytics-Tutorial
+          path: TASBEFlowAnalytics-Tutorial
+      - uses: joergbrech/moxunit-action@master
+        with:
+          working_directory: TASBEFlowAnalytics
+          tests: tests
+          src: tests code code/utils library_code library_code/jsonlab test_templates gmdistribution matlab_compat
+          pkg: io      
